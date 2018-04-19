@@ -18,9 +18,9 @@ type GIAndAccessionLink struct {
 
 type Accession struct {
 	gorm.Model
-	GIAndAccessionLink GIAndAccessionLink `gorm:"foreignkey:GIAcessionID;association_foreignkey:ID"`
-	Organism Organism `gorm:"foreignkey:OrganismID;association_foreignkey:ID"`
-	GIAccessionID uint
+	GIAndAccessionLink GIAndAccessionLink
+	Organism Organism
+	GIAndAccessionLinkID uint
 	OrganismID uint
 	Position int `gorm:"int;not null"`
 	FileP string `gorm:"varchar(1000);not null"`
@@ -34,8 +34,12 @@ func InitiateDB(db *gorm.DB) {
 	g := GIAndAccessionLink{GI:1,Accession:"214"}
 	db.Create(&g)
 	db.Create(&o)
-	a := Accession{GIAccessionID:g.ID, OrganismID:o.ID, Position:1, FileP:"f:/"}
+	a := Accession{GIAndAccessionLink:g, Organism: o, Position:1, FileP:"f:/"}
+
 	db.Create(&a)
 	log.Println(a)
+	var s Accession
+	db.Preload("Organism").First(&s)
+	log.Println(s)
 	db.Model(&GIAndAccessionLink{}).AddUniqueIndex("acc", "accession")
 }
