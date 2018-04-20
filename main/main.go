@@ -6,14 +6,19 @@ import (
 	"log"
 	"upepgo/upepmodel"
 )
-
-
-func main()  {
-	db, err := gorm.Open("sqlite3", "test.db")
+var DB *gorm.DB
+func init() {
+	var err error
+	DB, err = gorm.Open("sqlite3", "test.db")
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer db.Close()
-	upepmodel.InitiateDB(db)
+	log.Println("Database successfully connected")
+}
+
+
+func main()  {
+	defer DB.Close()
+	upepmodel.InitiateDB(DB)
 
 }
