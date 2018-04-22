@@ -19,7 +19,7 @@ var sslmode = flag.String("ssl", "", "SSL Mode")
 
 func main()  {
 	flag.Parse()
-	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v", *dbName, *user, *sslmode)
+	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v", *dbName, *user, *sslmode, *pass)
 	db, err := sql.Open(*driver, setting)
 	if err != nil {
 		log.Fatalln(err)
