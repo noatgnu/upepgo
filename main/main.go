@@ -1,24 +1,35 @@
 package main
 
 import (
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/jinzhu/gorm"
+	"database/sql"
+	_ "github.com/lib/pq"
 	"log"
-	"upepgo/upepmodel"
+	"upepgo/refseqdb"
+	"upepgo/models"
+	"time"
+	"flag"
+	"fmt"
 )
-var DB *gorm.DB
-func init() {
-	var err error
-	DB, err = gorm.Open("sqlite3", "test.db")
+
+var driver = flag.String("driver", "postgres", "Name of database driver to be used")
+var dbName = flag.String("db", "", "Name of database")
+var user = flag.String("user", "", "Database username")
+var pass = flag.String("pass", "", "User password")
+var sslmode = flag.String("ssl", "", "SSL Mode")
+
+func main()  {
+	flag.Parse()
+	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v", *dbName, *user, *sslmode)
+	db, err := sql.Open(*driver, setting)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println("Database successfully connected")
-}
-
-
-func main()  {
-	defer DB.Close()
-	upepmodel.InitiateDB(DB)
-
+	refseqdb.Truncate(db)
+	var refseq models.UpepRefSeqDB
+	refseq.Name = "Complete"
+	refseq.Insert(db)
+	ti := time.Now()
+	refseqdb.ReadRefSeqDB("temp/complete.1034.rna.gbff.gz", refseq.ID, db)
+	log.Println(time.Since(ti))
+	defer db.Close()
 }

@@ -16,3 +16,7 @@
 .idea
 .idea/workspace.xml
 .idea/workspace.xml
+*.db-journal
+*.gz
+temp/RELEASE_NUMBER
+sqlboiler.toml
