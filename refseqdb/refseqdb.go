@@ -67,7 +67,8 @@ TRUNCATE TABLE upep.upep_ref_seq_entries
     db.Exec(r)
 }
 
-func DownloadRefSeqDB(dbList []string, db *sql.DB) {
+func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
+	EnChan := make(chan *ftp.Entry)
 	client, err := ftp.Dial(host)
 	if err != nil {
 		log.Panicln(err)
@@ -77,22 +78,26 @@ func DownloadRefSeqDB(dbList []string, db *sql.DB) {
 	}
 	version := GetRemoteReleaseVersion(client)
 	log.Println(version)
-	localDBs := GetLocalDBVersion(db, dbList)
-	for i := range localDBs {
-		if localDBs[i].Version < version {
-			fileList, err := client.List(base + releaseMap[localDBs[i].Name])
-			if err != nil {
-				log.Panicln(err)
-			}
-			for f := range fileList {
-				if strings.HasSuffix(fileList[f].Name, "rna.gbff.gz") {
-					log.Println(fileList[f].Name)
+	go func() {
+		localDBs := GetLocalDBVersion(db, dbList)
+		for i := range localDBs {
+			if localDBs[i].Version < version {
+				fileList, err := client.List(base + releaseMap[localDBs[i].Name])
+				if err != nil {
+					log.Panicln(err)
+				}
+				for f := range fileList {
+					if strings.HasSuffix(fileList[f].Name, "rna.gbff.gz") {
+						EnChan <- fileList[f]
+					}
 				}
 			}
 		}
-	}
-	client.Logout()
-	client.Quit()
+		client.Logout()
+		client.Quit()
+		close(EnChan)
+	}()
+	return EnChan
 }
 
 func GetDownloadedRefSeqDB (rootPath string) []*models.UpepRefSeqDB {

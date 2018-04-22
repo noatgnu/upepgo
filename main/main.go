@@ -17,6 +17,7 @@ var user = flag.String("user", "", "Database username")
 var pass = flag.String("pass", "", "User password")
 var sslmode = flag.String("ssl", "", "SSL Mode")
 var port = flag.Int("port", 5432, "Database port")
+var runMode = flag.Int("mode", 0, "0 - WebServer \n 1 - Download DBs \n 2 - Process DBs \n 3 - Download and Process DBs \n 4 - Show DB Version")
 
 func main()  {
 	flag.Parse()
