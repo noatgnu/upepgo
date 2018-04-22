@@ -16,10 +16,11 @@ var dbName = flag.String("db", "", "Name of database")
 var user = flag.String("user", "", "Database username")
 var pass = flag.String("pass", "", "User password")
 var sslmode = flag.String("ssl", "", "SSL Mode")
+var port = flag.Int("port", 5432, "Database port")
 
 func main()  {
 	flag.Parse()
-	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v", *dbName, *user, *sslmode, *pass)
+	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v port=%v", *dbName, *user, *sslmode, *pass, *port)
 	db, err := sql.Open(*driver, setting)
 	if err != nil {
 		log.Fatalln(err)

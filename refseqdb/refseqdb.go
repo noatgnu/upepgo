@@ -142,13 +142,12 @@ func ReadGZText(path string) chan string {
 	return c
 }
 
-func ReadRefSeqDB(path string, source int64, db *sql.DB) {
+func ParseRefSeqDB(path string, source int64) chan RefSInf {
 	sqlChan := make(chan RefSInf)
-	go func (){
+	go func() {
 		seqFlag := false
 		featureFlag := false
 		rsChan := ReadGZText(path)
-
 
 		var res RefSInf
 		res.RefSeq = models.UpepRefSeqEntry{}
@@ -232,6 +231,11 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 		}
 		close(sqlChan)
 	}()
+	return sqlChan
+}
+
+func ReadRefSeqDB(path string, source int64, db *sql.DB) {
+	sqlChan := ParseRefSeqDB(path, source)
 
 	molecularTypeMap := make(map[string]models.UpepMolecularType)
 	organismMap := make(map[string]models.UpepOrganism)
@@ -245,7 +249,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 			res.RefSeq.MolecularTypeID = null.NewInt64(val.ID, true)
 		} else {
 			err := res.MolecularType.Insert(db)
-			if err!= nil {
+			if err != nil {
 				tx.Rollback()
 				log.Panicln(res.MolecularType)
 			}
@@ -256,7 +260,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 			res.RefSeq.OrganismID = null.NewInt64(val.ID, true)
 		} else {
 			err := res.Organism.Insert(db)
-			if err!= nil {
+			if err != nil {
 				tx.Rollback()
 				log.Panicln(res.Organism)
 			}
@@ -265,7 +269,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 		}
 		if res.Accession.Accession != "" {
 			err = res.Accession.Insert(db)
-			if err!= nil {
+			if err != nil {
 				tx.Rollback()
 				log.Panicln(res.Accession)
 			}
@@ -274,7 +278,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 
 		if res.GI.Gi != 0 {
 			err = res.GI.Insert(db)
-			if err!= nil {
+			if err != nil {
 				tx.Rollback()
 				log.Panicln(res.GI)
 			}
@@ -283,7 +287,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 		res.RefSeq.RefSeqDBID = null.NewInt64(source, true)
 
 		err = res.RefSeq.Insert(db)
-		if err!= nil {
+		if err != nil {
 			tx.Rollback()
 			log.Panicln(res.RefSeq)
 		}
@@ -295,6 +299,8 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 		count ++
 	}
 }
+
+
 func GetLocalDBVersion(db *sql.DB, checkSelect []string) (localDBs []*models.UpepRefSeqDB) {
 	tx, err := db.Begin()
 	if err != nil {
