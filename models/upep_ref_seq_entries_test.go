@@ -1473,7 +1473,7 @@ func testUpepRefSeqEntriesSelect(t *testing.T) {
 }
 
 var (
-	upepRefSeqEntryDBTypes = map[string]string{`AccessionID`: `bigint`, `CreatedAt`: `timestamp without time zone`, `GiID`: `bigint`, `ID`: `bigint`, `MolecularTypeID`: `bigint`, `Name`: `character varying`, `OrganismID`: `bigint`, `RefSeqDBID`: `bigint`, `RefSeqSequence`: `text`, `UpdatedAt`: `timestamp without time zone`}
+	upepRefSeqEntryDBTypes = map[string]string{`AccessionID`: `bigint`, `CreatedAt`: `timestamp with time zone`, `GiID`: `bigint`, `ID`: `bigint`, `MolecularTypeID`: `bigint`, `Name`: `character varying`, `OrganismID`: `bigint`, `RefSeqDBID`: `bigint`, `RefSeqSequence`: `text`, `UpdatedAt`: `timestamp with time zone`}
 	_                      = bytes.MinRead
 )
 

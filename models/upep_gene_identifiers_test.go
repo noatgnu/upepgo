@@ -854,7 +854,7 @@ func testUpepGeneIdentifiersSelect(t *testing.T) {
 }
 
 var (
-	upepGeneIdentifierDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `Gi`: `bigint`, `ID`: `bigint`, `UpdatedAt`: `timestamp without time zone`}
+	upepGeneIdentifierDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `Gi`: `bigint`, `ID`: `bigint`, `UpdatedAt`: `timestamp with time zone`}
 	_                         = bytes.MinRead
 )
 

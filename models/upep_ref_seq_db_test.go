@@ -854,7 +854,7 @@ func testUpepRefSeqDBSSelect(t *testing.T) {
 }
 
 var (
-	upepRefSeqDBDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp without time zone`, `Version`: `integer`}
+	upepRefSeqDBDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp with time zone`, `Version`: `integer`}
 	_                   = bytes.MinRead
 )
 

@@ -5,6 +5,7 @@ package models
 
 var TableNames = struct {
 	UpepAccessions      string
+	UpepBlastDB         string
 	UpepFeatures        string
 	UpepGeneIdentifiers string
 	UpepMolecularTypes  string
@@ -13,6 +14,7 @@ var TableNames = struct {
 	UpepRefSeqEntries   string
 }{
 	UpepAccessions:      "upep_accessions",
+	UpepBlastDB:         "upep_blast_db",
 	UpepFeatures:        "upep_features",
 	UpepGeneIdentifiers: "upep_gene_identifiers",
 	UpepMolecularTypes:  "upep_molecular_types",

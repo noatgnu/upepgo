@@ -854,7 +854,7 @@ func testUpepAccessionsSelect(t *testing.T) {
 }
 
 var (
-	upepAccessionDBTypes = map[string]string{`Accession`: `character varying`, `CreatedAt`: `timestamp without time zone`, `ID`: `bigint`, `UpdatedAt`: `timestamp without time zone`}
+	upepAccessionDBTypes = map[string]string{`Accession`: `text`, `CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `UpdatedAt`: `timestamp with time zone`}
 	_                    = bytes.MinRead
 )
 

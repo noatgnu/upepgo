@@ -638,7 +638,7 @@ func testUpepFeaturesSelect(t *testing.T) {
 }
 
 var (
-	upepFeatureDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `FeatureEnd`: `integer`, `FeatureStart`: `integer`, `ID`: `bigint`, `Name`: `character varying`, `PartialEnd`: `boolean`, `PartialStart`: `boolean`, `RefSeqEntryID`: `bigint`, `UpdatedAt`: `timestamp without time zone`}
+	upepFeatureDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `FeatureEnd`: `integer`, `FeatureStart`: `integer`, `ID`: `bigint`, `Name`: `character varying`, `PartialEnd`: `boolean`, `PartialStart`: `boolean`, `RefSeqEntryID`: `bigint`, `UpdatedAt`: `timestamp with time zone`}
 	_                  = bytes.MinRead
 )
 

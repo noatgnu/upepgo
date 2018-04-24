@@ -854,7 +854,7 @@ func testUpepOrganismsSelect(t *testing.T) {
 }
 
 var (
-	upepOrganismDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp without time zone`}
+	upepOrganismDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp with time zone`}
 	_                   = bytes.MinRead
 )
 

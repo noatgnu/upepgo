@@ -854,7 +854,7 @@ func testUpepMolecularTypesSelect(t *testing.T) {
 }
 
 var (
-	upepMolecularTypeDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `ID`: `bigint`, `Name`: `character varying`, `UpdatedAt`: `timestamp without time zone`}
+	upepMolecularTypeDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `Name`: `character varying`, `UpdatedAt`: `timestamp with time zone`}
 	_                        = bytes.MinRead
 )
 

@@ -13,6 +13,7 @@ import "testing"
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessions)
+	t.Run("UpepBlastDBS", testUpepBlastDBS)
 	t.Run("UpepFeatures", testUpepFeatures)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiers)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypes)
@@ -23,6 +24,7 @@ func TestParent(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsDelete)
+	t.Run("UpepBlastDBS", testUpepBlastDBSDelete)
 	t.Run("UpepFeatures", testUpepFeaturesDelete)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersDelete)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesDelete)
@@ -33,6 +35,7 @@ func TestDelete(t *testing.T) {
 
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsQueryDeleteAll)
+	t.Run("UpepBlastDBS", testUpepBlastDBSQueryDeleteAll)
 	t.Run("UpepFeatures", testUpepFeaturesQueryDeleteAll)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersQueryDeleteAll)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesQueryDeleteAll)
@@ -43,6 +46,7 @@ func TestQueryDeleteAll(t *testing.T) {
 
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsSliceDeleteAll)
+	t.Run("UpepBlastDBS", testUpepBlastDBSSliceDeleteAll)
 	t.Run("UpepFeatures", testUpepFeaturesSliceDeleteAll)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersSliceDeleteAll)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesSliceDeleteAll)
@@ -53,6 +57,7 @@ func TestSliceDeleteAll(t *testing.T) {
 
 func TestExists(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsExists)
+	t.Run("UpepBlastDBS", testUpepBlastDBSExists)
 	t.Run("UpepFeatures", testUpepFeaturesExists)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersExists)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesExists)
@@ -63,6 +68,7 @@ func TestExists(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsFind)
+	t.Run("UpepBlastDBS", testUpepBlastDBSFind)
 	t.Run("UpepFeatures", testUpepFeaturesFind)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersFind)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesFind)
@@ -73,6 +79,7 @@ func TestFind(t *testing.T) {
 
 func TestBind(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsBind)
+	t.Run("UpepBlastDBS", testUpepBlastDBSBind)
 	t.Run("UpepFeatures", testUpepFeaturesBind)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersBind)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesBind)
@@ -83,6 +90,7 @@ func TestBind(t *testing.T) {
 
 func TestOne(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsOne)
+	t.Run("UpepBlastDBS", testUpepBlastDBSOne)
 	t.Run("UpepFeatures", testUpepFeaturesOne)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersOne)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesOne)
@@ -93,6 +101,7 @@ func TestOne(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsAll)
+	t.Run("UpepBlastDBS", testUpepBlastDBSAll)
 	t.Run("UpepFeatures", testUpepFeaturesAll)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersAll)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesAll)
@@ -103,6 +112,7 @@ func TestAll(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsCount)
+	t.Run("UpepBlastDBS", testUpepBlastDBSCount)
 	t.Run("UpepFeatures", testUpepFeaturesCount)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersCount)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesCount)
@@ -113,6 +123,7 @@ func TestCount(t *testing.T) {
 
 func TestHooks(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsHooks)
+	t.Run("UpepBlastDBS", testUpepBlastDBSHooks)
 	t.Run("UpepFeatures", testUpepFeaturesHooks)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersHooks)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesHooks)
@@ -124,6 +135,8 @@ func TestHooks(t *testing.T) {
 func TestInsert(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsInsert)
 	t.Run("UpepAccessions", testUpepAccessionsInsertWhitelist)
+	t.Run("UpepBlastDBS", testUpepBlastDBSInsert)
+	t.Run("UpepBlastDBS", testUpepBlastDBSInsertWhitelist)
 	t.Run("UpepFeatures", testUpepFeaturesInsert)
 	t.Run("UpepFeatures", testUpepFeaturesInsertWhitelist)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersInsert)
@@ -226,6 +239,7 @@ func TestToManyRemove(t *testing.T) {
 
 func TestReload(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsReload)
+	t.Run("UpepBlastDBS", testUpepBlastDBSReload)
 	t.Run("UpepFeatures", testUpepFeaturesReload)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersReload)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesReload)
@@ -236,6 +250,7 @@ func TestReload(t *testing.T) {
 
 func TestReloadAll(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsReloadAll)
+	t.Run("UpepBlastDBS", testUpepBlastDBSReloadAll)
 	t.Run("UpepFeatures", testUpepFeaturesReloadAll)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersReloadAll)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesReloadAll)
@@ -246,6 +261,7 @@ func TestReloadAll(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsSelect)
+	t.Run("UpepBlastDBS", testUpepBlastDBSSelect)
 	t.Run("UpepFeatures", testUpepFeaturesSelect)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersSelect)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesSelect)
@@ -256,6 +272,7 @@ func TestSelect(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsUpdate)
+	t.Run("UpepBlastDBS", testUpepBlastDBSUpdate)
 	t.Run("UpepFeatures", testUpepFeaturesUpdate)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersUpdate)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesUpdate)
@@ -266,6 +283,7 @@ func TestUpdate(t *testing.T) {
 
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsSliceUpdateAll)
+	t.Run("UpepBlastDBS", testUpepBlastDBSSliceUpdateAll)
 	t.Run("UpepFeatures", testUpepFeaturesSliceUpdateAll)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersSliceUpdateAll)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesSliceUpdateAll)
@@ -276,6 +294,7 @@ func TestSliceUpdateAll(t *testing.T) {
 
 func TestUpsert(t *testing.T) {
 	t.Run("UpepAccessions", testUpepAccessionsUpsert)
+	t.Run("UpepBlastDBS", testUpepBlastDBSUpsert)
 	t.Run("UpepFeatures", testUpepFeaturesUpsert)
 	t.Run("UpepGeneIdentifiers", testUpepGeneIdentifiersUpsert)
 	t.Run("UpepMolecularTypes", testUpepMolecularTypesUpsert)
