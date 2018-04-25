@@ -20,3 +20,4 @@
 *.gz
 temp/RELEASE_NUMBER
 sqlboiler.toml
+dbconfig.yml
