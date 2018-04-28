@@ -534,6 +534,78 @@ func testUpepRefSeqEntryToManyRefSeqEntryUpepFeatures(t *testing.T) {
 	}
 }
 
+func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqEntry
+	var b, c UpepSorfPo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqEntryDBTypes, true, upepRefSeqEntryColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqEntry struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
+
+	b.RefSeqEntryID = a.ID
+	c.RefSeqEntryID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepSorfPo, err := a.RefSeqEntryUpepSorfPos(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepSorfPo {
+		if v.RefSeqEntryID == b.RefSeqEntryID {
+			bFound = true
+		}
+		if v.RefSeqEntryID == c.RefSeqEntryID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepRefSeqEntrySlice{&a}
+	if err = a.L.LoadRefSeqEntryUpepSorfPos(tx, false, (*[]*UpepRefSeqEntry)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.RefSeqEntryUpepSorfPos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.RefSeqEntryUpepSorfPos = nil
+	if err = a.L.LoadRefSeqEntryUpepSorfPos(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.RefSeqEntryUpepSorfPos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepSorfPo)
+	}
+}
+
 func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepFeatures(t *testing.T) {
 	var err error
 
@@ -600,6 +672,80 @@ func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepFeatures(t *testing.T) {
 		}
 
 		count, err := a.RefSeqEntryUpepFeatures(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPos(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqEntry
+	var b, c, d, e UpepSorfPo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqEntryDBTypes, false, strmangle.SetComplement(upepRefSeqEntryPrimaryKeyColumns, upepRefSeqEntryColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepSorfPo{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepSorfPoDBTypes, false, strmangle.SetComplement(upepSorfPoPrimaryKeyColumns, upepSorfPoColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepSorfPo{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddRefSeqEntryUpepSorfPos(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.RefSeqEntryID {
+			t.Error("foreign key was wrong value", a.ID, first.RefSeqEntryID)
+		}
+		if a.ID != second.RefSeqEntryID {
+			t.Error("foreign key was wrong value", a.ID, second.RefSeqEntryID)
+		}
+
+		if first.R.RefSeqEntry != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.RefSeqEntry != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.RefSeqEntryUpepSorfPos[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.RefSeqEntryUpepSorfPos[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.RefSeqEntryUpepSorfPos(tx).Count()
 		if err != nil {
 			t.Fatal(err)
 		}

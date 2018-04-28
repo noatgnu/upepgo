@@ -359,3 +359,28 @@ func DownloadToTemp(client *ftp.ServerConn, fileName string) {
 	}
 	log.Printf("Downloaded %v (%v bytes)", fileName,n)
 }
+
+func ParseUpep(seq string, codingSegStart int, grace int, codons []string, db *sql.DB) {
+	endingCodons := map[string]bool{"TAG":true, "TAA":true, "TGA":true}
+	seqLen := len(seq)
+	var pos int
+	for i, _ := range seq[:codingSegStart-1] {
+		if i <= (seqLen-3) {
+			if _, ok := endingCodons[seq[i:i+3]]; ok {
+				pos = i
+				break
+			}
+		}
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		log.Panicln(err)
+	}
+	for _, v := range codons {
+		s := strings.Index(seq[:pos], v)
+		if s != -1 {
+
+		}
+	}
+
+}
