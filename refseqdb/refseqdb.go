@@ -360,14 +360,15 @@ func DownloadToTemp(client *ftp.ServerConn, fileName string) {
 	log.Printf("Downloaded %v (%v bytes)", fileName,n)
 }
 
-func ParseUpep(seq string, codingSegStart int, grace int, codons []string, db *sql.DB) {
-	endingCodons := map[string]bool{"TAG":true, "TAA":true, "TGA":true}
+func ParseUpep(seq string, codingSegStart int, grace int, codons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) {
 	seqLen := len(seq)
-	var pos int
+	var codon *models.UpepCodon
+	var sorf models.UpepSorfPosition
 	for i, _ := range seq[:codingSegStart-1] {
 		if i <= (seqLen-3) {
-			if _, ok := endingCodons[seq[i:i+3]]; ok {
-				pos = i
+			if val, ok := endingCodons[seq[i:i+3]]; ok {
+				sorf.EndingPosition = i
+				codon = val
 				break
 			}
 		}
@@ -377,9 +378,9 @@ func ParseUpep(seq string, codingSegStart int, grace int, codons []string, db *s
 		log.Panicln(err)
 	}
 	for _, v := range codons {
-		s := strings.Index(seq[:pos], v)
+		s := strings.Index(seq[:sorf.EndingPosition], v.Sequence)
 		if s != -1 {
-
+			tx.
 		}
 	}
 

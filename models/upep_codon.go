@@ -51,8 +51,8 @@ var UpepCodonColumns = struct {
 
 // upepCodonR is where relationships are stored.
 type upepCodonR struct {
-	StartingCodonUpepSorfPos UpepSorfPoSlice
-	EndingCodonUpepSorfPos   UpepSorfPoSlice
+	StartingCodonUpepSorfPositions UpepSorfPositionSlice
+	EndingCodonUpepSorfPositions   UpepSorfPositionSlice
 }
 
 // upepCodonL is where Load methods for each relationship are stored.
@@ -341,61 +341,61 @@ func (q upepCodonQuery) Exists() (bool, error) {
 	return count > 0, nil
 }
 
-// StartingCodonUpepSorfPosG retrieves all the upep_sorf_po's upep sorf pos via starting_codon_id column.
-func (o *UpepCodon) StartingCodonUpepSorfPosG(mods ...qm.QueryMod) upepSorfPoQuery {
-	return o.StartingCodonUpepSorfPos(boil.GetDB(), mods...)
+// StartingCodonUpepSorfPositionsG retrieves all the upep_sorf_position's upep sorf positions via starting_codon_id column.
+func (o *UpepCodon) StartingCodonUpepSorfPositionsG(mods ...qm.QueryMod) upepSorfPositionQuery {
+	return o.StartingCodonUpepSorfPositions(boil.GetDB(), mods...)
 }
 
-// StartingCodonUpepSorfPos retrieves all the upep_sorf_po's upep sorf pos with an executor via starting_codon_id column.
-func (o *UpepCodon) StartingCodonUpepSorfPos(exec boil.Executor, mods ...qm.QueryMod) upepSorfPoQuery {
+// StartingCodonUpepSorfPositions retrieves all the upep_sorf_position's upep sorf positions with an executor via starting_codon_id column.
+func (o *UpepCodon) StartingCodonUpepSorfPositions(exec boil.Executor, mods ...qm.QueryMod) upepSorfPositionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"upep\".\"upep_sorf_pos\".\"starting_codon_id\"=?", o.ID),
+		qm.Where("\"upep\".\"upep_sorf_positions\".\"starting_codon_id\"=?", o.ID),
 	)
 
-	query := UpepSorfPos(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_pos\"")
+	query := UpepSorfPositions(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_positions\"")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_pos\".*"})
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_positions\".*"})
 	}
 
 	return query
 }
 
-// EndingCodonUpepSorfPosG retrieves all the upep_sorf_po's upep sorf pos via ending_codon_id column.
-func (o *UpepCodon) EndingCodonUpepSorfPosG(mods ...qm.QueryMod) upepSorfPoQuery {
-	return o.EndingCodonUpepSorfPos(boil.GetDB(), mods...)
+// EndingCodonUpepSorfPositionsG retrieves all the upep_sorf_position's upep sorf positions via ending_codon_id column.
+func (o *UpepCodon) EndingCodonUpepSorfPositionsG(mods ...qm.QueryMod) upepSorfPositionQuery {
+	return o.EndingCodonUpepSorfPositions(boil.GetDB(), mods...)
 }
 
-// EndingCodonUpepSorfPos retrieves all the upep_sorf_po's upep sorf pos with an executor via ending_codon_id column.
-func (o *UpepCodon) EndingCodonUpepSorfPos(exec boil.Executor, mods ...qm.QueryMod) upepSorfPoQuery {
+// EndingCodonUpepSorfPositions retrieves all the upep_sorf_position's upep sorf positions with an executor via ending_codon_id column.
+func (o *UpepCodon) EndingCodonUpepSorfPositions(exec boil.Executor, mods ...qm.QueryMod) upepSorfPositionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"upep\".\"upep_sorf_pos\".\"ending_codon_id\"=?", o.ID),
+		qm.Where("\"upep\".\"upep_sorf_positions\".\"ending_codon_id\"=?", o.ID),
 	)
 
-	query := UpepSorfPos(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_pos\"")
+	query := UpepSorfPositions(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_positions\"")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_pos\".*"})
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_positions\".*"})
 	}
 
 	return query
 }
 
-// LoadStartingCodonUpepSorfPos allows an eager lookup of values, cached into the
+// LoadStartingCodonUpepSorfPositions allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepCodonL) LoadStartingCodonUpepSorfPos(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
+func (upepCodonL) LoadStartingCodonUpepSorfPositions(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
 	var slice []*UpepCodon
 	var object *UpepCodon
 
@@ -423,7 +423,7 @@ func (upepCodonL) LoadStartingCodonUpepSorfPos(e boil.Executor, singular bool, m
 	}
 
 	query := fmt.Sprintf(
-		"select * from \"upep\".\"upep_sorf_pos\" where \"starting_codon_id\" in (%s)",
+		"select * from \"upep\".\"upep_sorf_positions\" where \"starting_codon_id\" in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
 	)
 	if boil.DebugMode {
@@ -432,16 +432,16 @@ func (upepCodonL) LoadStartingCodonUpepSorfPos(e boil.Executor, singular bool, m
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load upep_sorf_pos")
+		return errors.Wrap(err, "failed to eager load upep_sorf_positions")
 	}
 	defer results.Close()
 
-	var resultSlice []*UpepSorfPo
+	var resultSlice []*UpepSorfPosition
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_pos")
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_positions")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -449,14 +449,14 @@ func (upepCodonL) LoadStartingCodonUpepSorfPos(e boil.Executor, singular bool, m
 		}
 	}
 	if singular {
-		object.R.StartingCodonUpepSorfPos = resultSlice
+		object.R.StartingCodonUpepSorfPositions = resultSlice
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.StartingCodonID {
-				local.R.StartingCodonUpepSorfPos = append(local.R.StartingCodonUpepSorfPos, foreign)
+				local.R.StartingCodonUpepSorfPositions = append(local.R.StartingCodonUpepSorfPositions, foreign)
 				break
 			}
 		}
@@ -465,9 +465,9 @@ func (upepCodonL) LoadStartingCodonUpepSorfPos(e boil.Executor, singular bool, m
 	return nil
 }
 
-// LoadEndingCodonUpepSorfPos allows an eager lookup of values, cached into the
+// LoadEndingCodonUpepSorfPositions allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepCodonL) LoadEndingCodonUpepSorfPos(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
+func (upepCodonL) LoadEndingCodonUpepSorfPositions(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
 	var slice []*UpepCodon
 	var object *UpepCodon
 
@@ -495,7 +495,7 @@ func (upepCodonL) LoadEndingCodonUpepSorfPos(e boil.Executor, singular bool, may
 	}
 
 	query := fmt.Sprintf(
-		"select * from \"upep\".\"upep_sorf_pos\" where \"ending_codon_id\" in (%s)",
+		"select * from \"upep\".\"upep_sorf_positions\" where \"ending_codon_id\" in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
 	)
 	if boil.DebugMode {
@@ -504,16 +504,16 @@ func (upepCodonL) LoadEndingCodonUpepSorfPos(e boil.Executor, singular bool, may
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load upep_sorf_pos")
+		return errors.Wrap(err, "failed to eager load upep_sorf_positions")
 	}
 	defer results.Close()
 
-	var resultSlice []*UpepSorfPo
+	var resultSlice []*UpepSorfPosition
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_pos")
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_positions")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -521,14 +521,14 @@ func (upepCodonL) LoadEndingCodonUpepSorfPos(e boil.Executor, singular bool, may
 		}
 	}
 	if singular {
-		object.R.EndingCodonUpepSorfPos = resultSlice
+		object.R.EndingCodonUpepSorfPositions = resultSlice
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.EndingCodonID {
-				local.R.EndingCodonUpepSorfPos = append(local.R.EndingCodonUpepSorfPos, foreign)
+				local.R.EndingCodonUpepSorfPositions = append(local.R.EndingCodonUpepSorfPositions, foreign)
 				break
 			}
 		}
@@ -537,42 +537,42 @@ func (upepCodonL) LoadEndingCodonUpepSorfPos(e boil.Executor, singular bool, may
 	return nil
 }
 
-// AddStartingCodonUpepSorfPosG adds the given related objects to the existing relationships
+// AddStartingCodonUpepSorfPositionsG adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.StartingCodonUpepSorfPos.
+// Appends related to o.R.StartingCodonUpepSorfPositions.
 // Sets related.R.StartingCodon appropriately.
 // Uses the global database handle.
-func (o *UpepCodon) AddStartingCodonUpepSorfPosG(insert bool, related ...*UpepSorfPo) error {
-	return o.AddStartingCodonUpepSorfPos(boil.GetDB(), insert, related...)
+func (o *UpepCodon) AddStartingCodonUpepSorfPositionsG(insert bool, related ...*UpepSorfPosition) error {
+	return o.AddStartingCodonUpepSorfPositions(boil.GetDB(), insert, related...)
 }
 
-// AddStartingCodonUpepSorfPosP adds the given related objects to the existing relationships
+// AddStartingCodonUpepSorfPositionsP adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.StartingCodonUpepSorfPos.
+// Appends related to o.R.StartingCodonUpepSorfPositions.
 // Sets related.R.StartingCodon appropriately.
 // Panics on error.
-func (o *UpepCodon) AddStartingCodonUpepSorfPosP(exec boil.Executor, insert bool, related ...*UpepSorfPo) {
-	if err := o.AddStartingCodonUpepSorfPos(exec, insert, related...); err != nil {
+func (o *UpepCodon) AddStartingCodonUpepSorfPositionsP(exec boil.Executor, insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddStartingCodonUpepSorfPositions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddStartingCodonUpepSorfPosGP adds the given related objects to the existing relationships
+// AddStartingCodonUpepSorfPositionsGP adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.StartingCodonUpepSorfPos.
+// Appends related to o.R.StartingCodonUpepSorfPositions.
 // Sets related.R.StartingCodon appropriately.
 // Uses the global database handle and panics on error.
-func (o *UpepCodon) AddStartingCodonUpepSorfPosGP(insert bool, related ...*UpepSorfPo) {
-	if err := o.AddStartingCodonUpepSorfPos(boil.GetDB(), insert, related...); err != nil {
+func (o *UpepCodon) AddStartingCodonUpepSorfPositionsGP(insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddStartingCodonUpepSorfPositions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddStartingCodonUpepSorfPos adds the given related objects to the existing relationships
+// AddStartingCodonUpepSorfPositions adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.StartingCodonUpepSorfPos.
+// Appends related to o.R.StartingCodonUpepSorfPositions.
 // Sets related.R.StartingCodon appropriately.
-func (o *UpepCodon) AddStartingCodonUpepSorfPos(exec boil.Executor, insert bool, related ...*UpepSorfPo) error {
+func (o *UpepCodon) AddStartingCodonUpepSorfPositions(exec boil.Executor, insert bool, related ...*UpepSorfPosition) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -582,9 +582,9 @@ func (o *UpepCodon) AddStartingCodonUpepSorfPos(exec boil.Executor, insert bool,
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+				"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"starting_codon_id"}),
-				strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -603,15 +603,15 @@ func (o *UpepCodon) AddStartingCodonUpepSorfPos(exec boil.Executor, insert bool,
 
 	if o.R == nil {
 		o.R = &upepCodonR{
-			StartingCodonUpepSorfPos: related,
+			StartingCodonUpepSorfPositions: related,
 		}
 	} else {
-		o.R.StartingCodonUpepSorfPos = append(o.R.StartingCodonUpepSorfPos, related...)
+		o.R.StartingCodonUpepSorfPositions = append(o.R.StartingCodonUpepSorfPositions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &upepSorfPoR{
+			rel.R = &upepSorfPositionR{
 				StartingCodon: o,
 			}
 		} else {
@@ -621,42 +621,42 @@ func (o *UpepCodon) AddStartingCodonUpepSorfPos(exec boil.Executor, insert bool,
 	return nil
 }
 
-// AddEndingCodonUpepSorfPosG adds the given related objects to the existing relationships
+// AddEndingCodonUpepSorfPositionsG adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.EndingCodonUpepSorfPos.
+// Appends related to o.R.EndingCodonUpepSorfPositions.
 // Sets related.R.EndingCodon appropriately.
 // Uses the global database handle.
-func (o *UpepCodon) AddEndingCodonUpepSorfPosG(insert bool, related ...*UpepSorfPo) error {
-	return o.AddEndingCodonUpepSorfPos(boil.GetDB(), insert, related...)
+func (o *UpepCodon) AddEndingCodonUpepSorfPositionsG(insert bool, related ...*UpepSorfPosition) error {
+	return o.AddEndingCodonUpepSorfPositions(boil.GetDB(), insert, related...)
 }
 
-// AddEndingCodonUpepSorfPosP adds the given related objects to the existing relationships
+// AddEndingCodonUpepSorfPositionsP adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.EndingCodonUpepSorfPos.
+// Appends related to o.R.EndingCodonUpepSorfPositions.
 // Sets related.R.EndingCodon appropriately.
 // Panics on error.
-func (o *UpepCodon) AddEndingCodonUpepSorfPosP(exec boil.Executor, insert bool, related ...*UpepSorfPo) {
-	if err := o.AddEndingCodonUpepSorfPos(exec, insert, related...); err != nil {
+func (o *UpepCodon) AddEndingCodonUpepSorfPositionsP(exec boil.Executor, insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddEndingCodonUpepSorfPositions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddEndingCodonUpepSorfPosGP adds the given related objects to the existing relationships
+// AddEndingCodonUpepSorfPositionsGP adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.EndingCodonUpepSorfPos.
+// Appends related to o.R.EndingCodonUpepSorfPositions.
 // Sets related.R.EndingCodon appropriately.
 // Uses the global database handle and panics on error.
-func (o *UpepCodon) AddEndingCodonUpepSorfPosGP(insert bool, related ...*UpepSorfPo) {
-	if err := o.AddEndingCodonUpepSorfPos(boil.GetDB(), insert, related...); err != nil {
+func (o *UpepCodon) AddEndingCodonUpepSorfPositionsGP(insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddEndingCodonUpepSorfPositions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddEndingCodonUpepSorfPos adds the given related objects to the existing relationships
+// AddEndingCodonUpepSorfPositions adds the given related objects to the existing relationships
 // of the upep_codon, optionally inserting them as new records.
-// Appends related to o.R.EndingCodonUpepSorfPos.
+// Appends related to o.R.EndingCodonUpepSorfPositions.
 // Sets related.R.EndingCodon appropriately.
-func (o *UpepCodon) AddEndingCodonUpepSorfPos(exec boil.Executor, insert bool, related ...*UpepSorfPo) error {
+func (o *UpepCodon) AddEndingCodonUpepSorfPositions(exec boil.Executor, insert bool, related ...*UpepSorfPosition) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -666,9 +666,9 @@ func (o *UpepCodon) AddEndingCodonUpepSorfPos(exec boil.Executor, insert bool, r
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+				"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"ending_codon_id"}),
-				strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -687,15 +687,15 @@ func (o *UpepCodon) AddEndingCodonUpepSorfPos(exec boil.Executor, insert bool, r
 
 	if o.R == nil {
 		o.R = &upepCodonR{
-			EndingCodonUpepSorfPos: related,
+			EndingCodonUpepSorfPositions: related,
 		}
 	} else {
-		o.R.EndingCodonUpepSorfPos = append(o.R.EndingCodonUpepSorfPos, related...)
+		o.R.EndingCodonUpepSorfPositions = append(o.R.EndingCodonUpepSorfPositions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &upepSorfPoR{
+			rel.R = &upepSorfPositionR{
 				EndingCodon: o,
 			}
 		} else {

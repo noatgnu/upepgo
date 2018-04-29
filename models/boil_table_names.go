@@ -13,7 +13,7 @@ var TableNames = struct {
 	UpepOrganisms       string
 	UpepRefSeqDB        string
 	UpepRefSeqEntries   string
-	UpepSorfPos         string
+	UpepSorfPositions   string
 }{
 	UpepAccessions:      "upep_accessions",
 	UpepBlastDB:         "upep_blast_db",
@@ -24,5 +24,5 @@ var TableNames = struct {
 	UpepOrganisms:       "upep_organisms",
 	UpepRefSeqDB:        "upep_ref_seq_db",
 	UpepRefSeqEntries:   "upep_ref_seq_entries",
-	UpepSorfPos:         "upep_sorf_pos",
+	UpepSorfPositions:   "upep_sorf_positions",
 }

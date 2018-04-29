@@ -20,8 +20,8 @@ import (
 	"gopkg.in/volatiletech/null.v6"
 )
 
-// UpepSorfPo is an object representing the database table.
-type UpepSorfPo struct {
+// UpepSorfPosition is an object representing the database table.
+type UpepSorfPosition struct {
 	ID               int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
 	CreatedAt        null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt        null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
@@ -31,11 +31,11 @@ type UpepSorfPo struct {
 	StartingCodonID  int64     `boil:"starting_codon_id" json:"starting_codon_id" toml:"starting_codon_id" yaml:"starting_codon_id"`
 	EndingCodonID    int64     `boil:"ending_codon_id" json:"ending_codon_id" toml:"ending_codon_id" yaml:"ending_codon_id"`
 
-	R *upepSorfPoR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L upepSorfPoL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *upepSorfPositionR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L upepSorfPositionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-var UpepSorfPoColumns = struct {
+var UpepSorfPositionColumns = struct {
 	ID               string
 	CreatedAt        string
 	UpdatedAt        string
@@ -55,46 +55,46 @@ var UpepSorfPoColumns = struct {
 	EndingCodonID:    "ending_codon_id",
 }
 
-// upepSorfPoR is where relationships are stored.
-type upepSorfPoR struct {
+// upepSorfPositionR is where relationships are stored.
+type upepSorfPositionR struct {
 	RefSeqEntry   *UpepRefSeqEntry
 	StartingCodon *UpepCodon
 	EndingCodon   *UpepCodon
 }
 
-// upepSorfPoL is where Load methods for each relationship are stored.
-type upepSorfPoL struct{}
+// upepSorfPositionL is where Load methods for each relationship are stored.
+type upepSorfPositionL struct{}
 
 var (
-	upepSorfPoColumns               = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
-	upepSorfPoColumnsWithoutDefault = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
-	upepSorfPoColumnsWithDefault    = []string{}
-	upepSorfPoPrimaryKeyColumns     = []string{"id"}
+	upepSorfPositionColumns               = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
+	upepSorfPositionColumnsWithoutDefault = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
+	upepSorfPositionColumnsWithDefault    = []string{}
+	upepSorfPositionPrimaryKeyColumns     = []string{"id"}
 )
 
 type (
-	// UpepSorfPoSlice is an alias for a slice of pointers to UpepSorfPo.
-	// This should generally be used opposed to []UpepSorfPo.
-	UpepSorfPoSlice []*UpepSorfPo
-	// UpepSorfPoHook is the signature for custom UpepSorfPo hook methods
-	UpepSorfPoHook func(boil.Executor, *UpepSorfPo) error
+	// UpepSorfPositionSlice is an alias for a slice of pointers to UpepSorfPosition.
+	// This should generally be used opposed to []UpepSorfPosition.
+	UpepSorfPositionSlice []*UpepSorfPosition
+	// UpepSorfPositionHook is the signature for custom UpepSorfPosition hook methods
+	UpepSorfPositionHook func(boil.Executor, *UpepSorfPosition) error
 
-	upepSorfPoQuery struct {
+	upepSorfPositionQuery struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	upepSorfPoType                 = reflect.TypeOf(&UpepSorfPo{})
-	upepSorfPoMapping              = queries.MakeStructMapping(upepSorfPoType)
-	upepSorfPoPrimaryKeyMapping, _ = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, upepSorfPoPrimaryKeyColumns)
-	upepSorfPoInsertCacheMut       sync.RWMutex
-	upepSorfPoInsertCache          = make(map[string]insertCache)
-	upepSorfPoUpdateCacheMut       sync.RWMutex
-	upepSorfPoUpdateCache          = make(map[string]updateCache)
-	upepSorfPoUpsertCacheMut       sync.RWMutex
-	upepSorfPoUpsertCache          = make(map[string]insertCache)
+	upepSorfPositionType                 = reflect.TypeOf(&UpepSorfPosition{})
+	upepSorfPositionMapping              = queries.MakeStructMapping(upepSorfPositionType)
+	upepSorfPositionPrimaryKeyMapping, _ = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, upepSorfPositionPrimaryKeyColumns)
+	upepSorfPositionInsertCacheMut       sync.RWMutex
+	upepSorfPositionInsertCache          = make(map[string]insertCache)
+	upepSorfPositionUpdateCacheMut       sync.RWMutex
+	upepSorfPositionUpdateCache          = make(map[string]updateCache)
+	upepSorfPositionUpsertCacheMut       sync.RWMutex
+	upepSorfPositionUpsertCache          = make(map[string]insertCache)
 )
 
 var (
@@ -103,20 +103,20 @@ var (
 	// Force bytes in case of primary key column that uses []byte (for relationship compares)
 	_ = bytes.MinRead
 )
-var upepSorfPoBeforeInsertHooks []UpepSorfPoHook
-var upepSorfPoBeforeUpdateHooks []UpepSorfPoHook
-var upepSorfPoBeforeDeleteHooks []UpepSorfPoHook
-var upepSorfPoBeforeUpsertHooks []UpepSorfPoHook
+var upepSorfPositionBeforeInsertHooks []UpepSorfPositionHook
+var upepSorfPositionBeforeUpdateHooks []UpepSorfPositionHook
+var upepSorfPositionBeforeDeleteHooks []UpepSorfPositionHook
+var upepSorfPositionBeforeUpsertHooks []UpepSorfPositionHook
 
-var upepSorfPoAfterInsertHooks []UpepSorfPoHook
-var upepSorfPoAfterSelectHooks []UpepSorfPoHook
-var upepSorfPoAfterUpdateHooks []UpepSorfPoHook
-var upepSorfPoAfterDeleteHooks []UpepSorfPoHook
-var upepSorfPoAfterUpsertHooks []UpepSorfPoHook
+var upepSorfPositionAfterInsertHooks []UpepSorfPositionHook
+var upepSorfPositionAfterSelectHooks []UpepSorfPositionHook
+var upepSorfPositionAfterUpdateHooks []UpepSorfPositionHook
+var upepSorfPositionAfterDeleteHooks []UpepSorfPositionHook
+var upepSorfPositionAfterUpsertHooks []UpepSorfPositionHook
 
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *UpepSorfPo) doBeforeInsertHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoBeforeInsertHooks {
+func (o *UpepSorfPosition) doBeforeInsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionBeforeInsertHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -126,8 +126,8 @@ func (o *UpepSorfPo) doBeforeInsertHooks(exec boil.Executor) (err error) {
 }
 
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *UpepSorfPo) doBeforeUpdateHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoBeforeUpdateHooks {
+func (o *UpepSorfPosition) doBeforeUpdateHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionBeforeUpdateHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -137,8 +137,8 @@ func (o *UpepSorfPo) doBeforeUpdateHooks(exec boil.Executor) (err error) {
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *UpepSorfPo) doBeforeDeleteHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoBeforeDeleteHooks {
+func (o *UpepSorfPosition) doBeforeDeleteHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionBeforeDeleteHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -148,8 +148,8 @@ func (o *UpepSorfPo) doBeforeDeleteHooks(exec boil.Executor) (err error) {
 }
 
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *UpepSorfPo) doBeforeUpsertHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoBeforeUpsertHooks {
+func (o *UpepSorfPosition) doBeforeUpsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionBeforeUpsertHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -159,8 +159,8 @@ func (o *UpepSorfPo) doBeforeUpsertHooks(exec boil.Executor) (err error) {
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *UpepSorfPo) doAfterInsertHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoAfterInsertHooks {
+func (o *UpepSorfPosition) doAfterInsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionAfterInsertHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -170,8 +170,8 @@ func (o *UpepSorfPo) doAfterInsertHooks(exec boil.Executor) (err error) {
 }
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *UpepSorfPo) doAfterSelectHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoAfterSelectHooks {
+func (o *UpepSorfPosition) doAfterSelectHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionAfterSelectHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -181,8 +181,8 @@ func (o *UpepSorfPo) doAfterSelectHooks(exec boil.Executor) (err error) {
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *UpepSorfPo) doAfterUpdateHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoAfterUpdateHooks {
+func (o *UpepSorfPosition) doAfterUpdateHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionAfterUpdateHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -192,8 +192,8 @@ func (o *UpepSorfPo) doAfterUpdateHooks(exec boil.Executor) (err error) {
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *UpepSorfPo) doAfterDeleteHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoAfterDeleteHooks {
+func (o *UpepSorfPosition) doAfterDeleteHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionAfterDeleteHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -203,8 +203,8 @@ func (o *UpepSorfPo) doAfterDeleteHooks(exec boil.Executor) (err error) {
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *UpepSorfPo) doAfterUpsertHooks(exec boil.Executor) (err error) {
-	for _, hook := range upepSorfPoAfterUpsertHooks {
+func (o *UpepSorfPosition) doAfterUpsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range upepSorfPositionAfterUpsertHooks {
 		if err := hook(exec, o); err != nil {
 			return err
 		}
@@ -213,32 +213,32 @@ func (o *UpepSorfPo) doAfterUpsertHooks(exec boil.Executor) (err error) {
 	return nil
 }
 
-// AddUpepSorfPoHook registers your hook function for all future operations.
-func AddUpepSorfPoHook(hookPoint boil.HookPoint, upepSorfPoHook UpepSorfPoHook) {
+// AddUpepSorfPositionHook registers your hook function for all future operations.
+func AddUpepSorfPositionHook(hookPoint boil.HookPoint, upepSorfPositionHook UpepSorfPositionHook) {
 	switch hookPoint {
 	case boil.BeforeInsertHook:
-		upepSorfPoBeforeInsertHooks = append(upepSorfPoBeforeInsertHooks, upepSorfPoHook)
+		upepSorfPositionBeforeInsertHooks = append(upepSorfPositionBeforeInsertHooks, upepSorfPositionHook)
 	case boil.BeforeUpdateHook:
-		upepSorfPoBeforeUpdateHooks = append(upepSorfPoBeforeUpdateHooks, upepSorfPoHook)
+		upepSorfPositionBeforeUpdateHooks = append(upepSorfPositionBeforeUpdateHooks, upepSorfPositionHook)
 	case boil.BeforeDeleteHook:
-		upepSorfPoBeforeDeleteHooks = append(upepSorfPoBeforeDeleteHooks, upepSorfPoHook)
+		upepSorfPositionBeforeDeleteHooks = append(upepSorfPositionBeforeDeleteHooks, upepSorfPositionHook)
 	case boil.BeforeUpsertHook:
-		upepSorfPoBeforeUpsertHooks = append(upepSorfPoBeforeUpsertHooks, upepSorfPoHook)
+		upepSorfPositionBeforeUpsertHooks = append(upepSorfPositionBeforeUpsertHooks, upepSorfPositionHook)
 	case boil.AfterInsertHook:
-		upepSorfPoAfterInsertHooks = append(upepSorfPoAfterInsertHooks, upepSorfPoHook)
+		upepSorfPositionAfterInsertHooks = append(upepSorfPositionAfterInsertHooks, upepSorfPositionHook)
 	case boil.AfterSelectHook:
-		upepSorfPoAfterSelectHooks = append(upepSorfPoAfterSelectHooks, upepSorfPoHook)
+		upepSorfPositionAfterSelectHooks = append(upepSorfPositionAfterSelectHooks, upepSorfPositionHook)
 	case boil.AfterUpdateHook:
-		upepSorfPoAfterUpdateHooks = append(upepSorfPoAfterUpdateHooks, upepSorfPoHook)
+		upepSorfPositionAfterUpdateHooks = append(upepSorfPositionAfterUpdateHooks, upepSorfPositionHook)
 	case boil.AfterDeleteHook:
-		upepSorfPoAfterDeleteHooks = append(upepSorfPoAfterDeleteHooks, upepSorfPoHook)
+		upepSorfPositionAfterDeleteHooks = append(upepSorfPositionAfterDeleteHooks, upepSorfPositionHook)
 	case boil.AfterUpsertHook:
-		upepSorfPoAfterUpsertHooks = append(upepSorfPoAfterUpsertHooks, upepSorfPoHook)
+		upepSorfPositionAfterUpsertHooks = append(upepSorfPositionAfterUpsertHooks, upepSorfPositionHook)
 	}
 }
 
-// OneP returns a single upepSorfPo record from the query, and panics on error.
-func (q upepSorfPoQuery) OneP() *UpepSorfPo {
+// OneP returns a single upepSorfPosition record from the query, and panics on error.
+func (q upepSorfPositionQuery) OneP() *UpepSorfPosition {
 	o, err := q.One()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -247,9 +247,9 @@ func (q upepSorfPoQuery) OneP() *UpepSorfPo {
 	return o
 }
 
-// One returns a single upepSorfPo record from the query.
-func (q upepSorfPoQuery) One() (*UpepSorfPo, error) {
-	o := &UpepSorfPo{}
+// One returns a single upepSorfPosition record from the query.
+func (q upepSorfPositionQuery) One() (*UpepSorfPosition, error) {
+	o := &UpepSorfPosition{}
 
 	queries.SetLimit(q.Query, 1)
 
@@ -258,7 +258,7 @@ func (q upepSorfPoQuery) One() (*UpepSorfPo, error) {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: failed to execute a one query for upep_sorf_pos")
+		return nil, errors.Wrap(err, "models: failed to execute a one query for upep_sorf_positions")
 	}
 
 	if err := o.doAfterSelectHooks(queries.GetExecutor(q.Query)); err != nil {
@@ -268,8 +268,8 @@ func (q upepSorfPoQuery) One() (*UpepSorfPo, error) {
 	return o, nil
 }
 
-// AllP returns all UpepSorfPo records from the query, and panics on error.
-func (q upepSorfPoQuery) AllP() UpepSorfPoSlice {
+// AllP returns all UpepSorfPosition records from the query, and panics on error.
+func (q upepSorfPositionQuery) AllP() UpepSorfPositionSlice {
 	o, err := q.All()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -278,16 +278,16 @@ func (q upepSorfPoQuery) AllP() UpepSorfPoSlice {
 	return o
 }
 
-// All returns all UpepSorfPo records from the query.
-func (q upepSorfPoQuery) All() (UpepSorfPoSlice, error) {
-	var o []*UpepSorfPo
+// All returns all UpepSorfPosition records from the query.
+func (q upepSorfPositionQuery) All() (UpepSorfPositionSlice, error) {
+	var o []*UpepSorfPosition
 
 	err := q.Bind(&o)
 	if err != nil {
-		return nil, errors.Wrap(err, "models: failed to assign all query results to UpepSorfPo slice")
+		return nil, errors.Wrap(err, "models: failed to assign all query results to UpepSorfPosition slice")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterSelectHooks(queries.GetExecutor(q.Query)); err != nil {
 				return o, err
@@ -298,8 +298,8 @@ func (q upepSorfPoQuery) All() (UpepSorfPoSlice, error) {
 	return o, nil
 }
 
-// CountP returns the count of all UpepSorfPo records in the query, and panics on error.
-func (q upepSorfPoQuery) CountP() int64 {
+// CountP returns the count of all UpepSorfPosition records in the query, and panics on error.
+func (q upepSorfPositionQuery) CountP() int64 {
 	c, err := q.Count()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -308,8 +308,8 @@ func (q upepSorfPoQuery) CountP() int64 {
 	return c
 }
 
-// Count returns the count of all UpepSorfPo records in the query.
-func (q upepSorfPoQuery) Count() (int64, error) {
+// Count returns the count of all UpepSorfPosition records in the query.
+func (q upepSorfPositionQuery) Count() (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -317,14 +317,14 @@ func (q upepSorfPoQuery) Count() (int64, error) {
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to count upep_sorf_pos rows")
+		return 0, errors.Wrap(err, "models: failed to count upep_sorf_positions rows")
 	}
 
 	return count, nil
 }
 
 // Exists checks if the row exists in the table, and panics on error.
-func (q upepSorfPoQuery) ExistsP() bool {
+func (q upepSorfPositionQuery) ExistsP() bool {
 	e, err := q.Exists()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -334,7 +334,7 @@ func (q upepSorfPoQuery) ExistsP() bool {
 }
 
 // Exists checks if the row exists in the table.
-func (q upepSorfPoQuery) Exists() (bool, error) {
+func (q upepSorfPositionQuery) Exists() (bool, error) {
 	var count int64
 
 	queries.SetCount(q.Query)
@@ -342,19 +342,19 @@ func (q upepSorfPoQuery) Exists() (bool, error) {
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "models: failed to check if upep_sorf_pos exists")
+		return false, errors.Wrap(err, "models: failed to check if upep_sorf_positions exists")
 	}
 
 	return count > 0, nil
 }
 
 // RefSeqEntryG pointed to by the foreign key.
-func (o *UpepSorfPo) RefSeqEntryG(mods ...qm.QueryMod) upepRefSeqEntryQuery {
+func (o *UpepSorfPosition) RefSeqEntryG(mods ...qm.QueryMod) upepRefSeqEntryQuery {
 	return o.RefSeqEntry(boil.GetDB(), mods...)
 }
 
 // RefSeqEntry pointed to by the foreign key.
-func (o *UpepSorfPo) RefSeqEntry(exec boil.Executor, mods ...qm.QueryMod) upepRefSeqEntryQuery {
+func (o *UpepSorfPosition) RefSeqEntry(exec boil.Executor, mods ...qm.QueryMod) upepRefSeqEntryQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("id=?", o.RefSeqEntryID),
 	}
@@ -368,12 +368,12 @@ func (o *UpepSorfPo) RefSeqEntry(exec boil.Executor, mods ...qm.QueryMod) upepRe
 }
 
 // StartingCodonG pointed to by the foreign key.
-func (o *UpepSorfPo) StartingCodonG(mods ...qm.QueryMod) upepCodonQuery {
+func (o *UpepSorfPosition) StartingCodonG(mods ...qm.QueryMod) upepCodonQuery {
 	return o.StartingCodon(boil.GetDB(), mods...)
 }
 
 // StartingCodon pointed to by the foreign key.
-func (o *UpepSorfPo) StartingCodon(exec boil.Executor, mods ...qm.QueryMod) upepCodonQuery {
+func (o *UpepSorfPosition) StartingCodon(exec boil.Executor, mods ...qm.QueryMod) upepCodonQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("id=?", o.StartingCodonID),
 	}
@@ -387,12 +387,12 @@ func (o *UpepSorfPo) StartingCodon(exec boil.Executor, mods ...qm.QueryMod) upep
 }
 
 // EndingCodonG pointed to by the foreign key.
-func (o *UpepSorfPo) EndingCodonG(mods ...qm.QueryMod) upepCodonQuery {
+func (o *UpepSorfPosition) EndingCodonG(mods ...qm.QueryMod) upepCodonQuery {
 	return o.EndingCodon(boil.GetDB(), mods...)
 }
 
 // EndingCodon pointed to by the foreign key.
-func (o *UpepSorfPo) EndingCodon(exec boil.Executor, mods ...qm.QueryMod) upepCodonQuery {
+func (o *UpepSorfPosition) EndingCodon(exec boil.Executor, mods ...qm.QueryMod) upepCodonQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("id=?", o.EndingCodonID),
 	}
@@ -405,28 +405,28 @@ func (o *UpepSorfPo) EndingCodon(exec boil.Executor, mods ...qm.QueryMod) upepCo
 	return query
 } // LoadRefSeqEntry allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepSorfPoL) LoadRefSeqEntry(e boil.Executor, singular bool, maybeUpepSorfPo interface{}) error {
-	var slice []*UpepSorfPo
-	var object *UpepSorfPo
+func (upepSorfPositionL) LoadRefSeqEntry(e boil.Executor, singular bool, maybeUpepSorfPosition interface{}) error {
+	var slice []*UpepSorfPosition
+	var object *UpepSorfPosition
 
 	count := 1
 	if singular {
-		object = maybeUpepSorfPo.(*UpepSorfPo)
+		object = maybeUpepSorfPosition.(*UpepSorfPosition)
 	} else {
-		slice = *maybeUpepSorfPo.(*[]*UpepSorfPo)
+		slice = *maybeUpepSorfPosition.(*[]*UpepSorfPosition)
 		count = len(slice)
 	}
 
 	args := make([]interface{}, count)
 	if singular {
 		if object.R == nil {
-			object.R = &upepSorfPoR{}
+			object.R = &upepSorfPositionR{}
 		}
 		args[0] = object.RefSeqEntryID
 	} else {
 		for i, obj := range slice {
 			if obj.R == nil {
-				obj.R = &upepSorfPoR{}
+				obj.R = &upepSorfPositionR{}
 			}
 			args[i] = obj.RefSeqEntryID
 		}
@@ -452,7 +452,7 @@ func (upepSorfPoL) LoadRefSeqEntry(e boil.Executor, singular bool, maybeUpepSorf
 		return errors.Wrap(err, "failed to bind eager loaded slice UpepRefSeqEntry")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -483,28 +483,28 @@ func (upepSorfPoL) LoadRefSeqEntry(e boil.Executor, singular bool, maybeUpepSorf
 
 // LoadStartingCodon allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepSorfPoL) LoadStartingCodon(e boil.Executor, singular bool, maybeUpepSorfPo interface{}) error {
-	var slice []*UpepSorfPo
-	var object *UpepSorfPo
+func (upepSorfPositionL) LoadStartingCodon(e boil.Executor, singular bool, maybeUpepSorfPosition interface{}) error {
+	var slice []*UpepSorfPosition
+	var object *UpepSorfPosition
 
 	count := 1
 	if singular {
-		object = maybeUpepSorfPo.(*UpepSorfPo)
+		object = maybeUpepSorfPosition.(*UpepSorfPosition)
 	} else {
-		slice = *maybeUpepSorfPo.(*[]*UpepSorfPo)
+		slice = *maybeUpepSorfPosition.(*[]*UpepSorfPosition)
 		count = len(slice)
 	}
 
 	args := make([]interface{}, count)
 	if singular {
 		if object.R == nil {
-			object.R = &upepSorfPoR{}
+			object.R = &upepSorfPositionR{}
 		}
 		args[0] = object.StartingCodonID
 	} else {
 		for i, obj := range slice {
 			if obj.R == nil {
-				obj.R = &upepSorfPoR{}
+				obj.R = &upepSorfPositionR{}
 			}
 			args[i] = obj.StartingCodonID
 		}
@@ -530,7 +530,7 @@ func (upepSorfPoL) LoadStartingCodon(e boil.Executor, singular bool, maybeUpepSo
 		return errors.Wrap(err, "failed to bind eager loaded slice UpepCodon")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -561,28 +561,28 @@ func (upepSorfPoL) LoadStartingCodon(e boil.Executor, singular bool, maybeUpepSo
 
 // LoadEndingCodon allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepSorfPoL) LoadEndingCodon(e boil.Executor, singular bool, maybeUpepSorfPo interface{}) error {
-	var slice []*UpepSorfPo
-	var object *UpepSorfPo
+func (upepSorfPositionL) LoadEndingCodon(e boil.Executor, singular bool, maybeUpepSorfPosition interface{}) error {
+	var slice []*UpepSorfPosition
+	var object *UpepSorfPosition
 
 	count := 1
 	if singular {
-		object = maybeUpepSorfPo.(*UpepSorfPo)
+		object = maybeUpepSorfPosition.(*UpepSorfPosition)
 	} else {
-		slice = *maybeUpepSorfPo.(*[]*UpepSorfPo)
+		slice = *maybeUpepSorfPosition.(*[]*UpepSorfPosition)
 		count = len(slice)
 	}
 
 	args := make([]interface{}, count)
 	if singular {
 		if object.R == nil {
-			object.R = &upepSorfPoR{}
+			object.R = &upepSorfPositionR{}
 		}
 		args[0] = object.EndingCodonID
 	} else {
 		for i, obj := range slice {
 			if obj.R == nil {
-				obj.R = &upepSorfPoR{}
+				obj.R = &upepSorfPositionR{}
 			}
 			args[i] = obj.EndingCodonID
 		}
@@ -608,7 +608,7 @@ func (upepSorfPoL) LoadEndingCodon(e boil.Executor, singular bool, maybeUpepSorf
 		return errors.Wrap(err, "failed to bind eager loaded slice UpepCodon")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -637,38 +637,38 @@ func (upepSorfPoL) LoadEndingCodon(e boil.Executor, singular bool, maybeUpepSorf
 	return nil
 }
 
-// SetRefSeqEntryG of the upep_sorf_po to the related item.
+// SetRefSeqEntryG of the upep_sorf_position to the related item.
 // Sets o.R.RefSeqEntry to related.
-// Adds o to related.R.RefSeqEntryUpepSorfPos.
+// Adds o to related.R.RefSeqEntryUpepSorfPositions.
 // Uses the global database handle.
-func (o *UpepSorfPo) SetRefSeqEntryG(insert bool, related *UpepRefSeqEntry) error {
+func (o *UpepSorfPosition) SetRefSeqEntryG(insert bool, related *UpepRefSeqEntry) error {
 	return o.SetRefSeqEntry(boil.GetDB(), insert, related)
 }
 
-// SetRefSeqEntryP of the upep_sorf_po to the related item.
+// SetRefSeqEntryP of the upep_sorf_position to the related item.
 // Sets o.R.RefSeqEntry to related.
-// Adds o to related.R.RefSeqEntryUpepSorfPos.
+// Adds o to related.R.RefSeqEntryUpepSorfPositions.
 // Panics on error.
-func (o *UpepSorfPo) SetRefSeqEntryP(exec boil.Executor, insert bool, related *UpepRefSeqEntry) {
+func (o *UpepSorfPosition) SetRefSeqEntryP(exec boil.Executor, insert bool, related *UpepRefSeqEntry) {
 	if err := o.SetRefSeqEntry(exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetRefSeqEntryGP of the upep_sorf_po to the related item.
+// SetRefSeqEntryGP of the upep_sorf_position to the related item.
 // Sets o.R.RefSeqEntry to related.
-// Adds o to related.R.RefSeqEntryUpepSorfPos.
+// Adds o to related.R.RefSeqEntryUpepSorfPositions.
 // Uses the global database handle and panics on error.
-func (o *UpepSorfPo) SetRefSeqEntryGP(insert bool, related *UpepRefSeqEntry) {
+func (o *UpepSorfPosition) SetRefSeqEntryGP(insert bool, related *UpepRefSeqEntry) {
 	if err := o.SetRefSeqEntry(boil.GetDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetRefSeqEntry of the upep_sorf_po to the related item.
+// SetRefSeqEntry of the upep_sorf_position to the related item.
 // Sets o.R.RefSeqEntry to related.
-// Adds o to related.R.RefSeqEntryUpepSorfPos.
-func (o *UpepSorfPo) SetRefSeqEntry(exec boil.Executor, insert bool, related *UpepRefSeqEntry) error {
+// Adds o to related.R.RefSeqEntryUpepSorfPositions.
+func (o *UpepSorfPosition) SetRefSeqEntry(exec boil.Executor, insert bool, related *UpepRefSeqEntry) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -677,9 +677,9 @@ func (o *UpepSorfPo) SetRefSeqEntry(exec boil.Executor, insert bool, related *Up
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+		"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"ref_seq_entry_id"}),
-		strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
 
@@ -695,7 +695,7 @@ func (o *UpepSorfPo) SetRefSeqEntry(exec boil.Executor, insert bool, related *Up
 	o.RefSeqEntryID = related.ID
 
 	if o.R == nil {
-		o.R = &upepSorfPoR{
+		o.R = &upepSorfPositionR{
 			RefSeqEntry: related,
 		}
 	} else {
@@ -704,47 +704,47 @@ func (o *UpepSorfPo) SetRefSeqEntry(exec boil.Executor, insert bool, related *Up
 
 	if related.R == nil {
 		related.R = &upepRefSeqEntryR{
-			RefSeqEntryUpepSorfPos: UpepSorfPoSlice{o},
+			RefSeqEntryUpepSorfPositions: UpepSorfPositionSlice{o},
 		}
 	} else {
-		related.R.RefSeqEntryUpepSorfPos = append(related.R.RefSeqEntryUpepSorfPos, o)
+		related.R.RefSeqEntryUpepSorfPositions = append(related.R.RefSeqEntryUpepSorfPositions, o)
 	}
 
 	return nil
 }
 
-// SetStartingCodonG of the upep_sorf_po to the related item.
+// SetStartingCodonG of the upep_sorf_position to the related item.
 // Sets o.R.StartingCodon to related.
-// Adds o to related.R.StartingCodonUpepSorfPos.
+// Adds o to related.R.StartingCodonUpepSorfPositions.
 // Uses the global database handle.
-func (o *UpepSorfPo) SetStartingCodonG(insert bool, related *UpepCodon) error {
+func (o *UpepSorfPosition) SetStartingCodonG(insert bool, related *UpepCodon) error {
 	return o.SetStartingCodon(boil.GetDB(), insert, related)
 }
 
-// SetStartingCodonP of the upep_sorf_po to the related item.
+// SetStartingCodonP of the upep_sorf_position to the related item.
 // Sets o.R.StartingCodon to related.
-// Adds o to related.R.StartingCodonUpepSorfPos.
+// Adds o to related.R.StartingCodonUpepSorfPositions.
 // Panics on error.
-func (o *UpepSorfPo) SetStartingCodonP(exec boil.Executor, insert bool, related *UpepCodon) {
+func (o *UpepSorfPosition) SetStartingCodonP(exec boil.Executor, insert bool, related *UpepCodon) {
 	if err := o.SetStartingCodon(exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetStartingCodonGP of the upep_sorf_po to the related item.
+// SetStartingCodonGP of the upep_sorf_position to the related item.
 // Sets o.R.StartingCodon to related.
-// Adds o to related.R.StartingCodonUpepSorfPos.
+// Adds o to related.R.StartingCodonUpepSorfPositions.
 // Uses the global database handle and panics on error.
-func (o *UpepSorfPo) SetStartingCodonGP(insert bool, related *UpepCodon) {
+func (o *UpepSorfPosition) SetStartingCodonGP(insert bool, related *UpepCodon) {
 	if err := o.SetStartingCodon(boil.GetDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetStartingCodon of the upep_sorf_po to the related item.
+// SetStartingCodon of the upep_sorf_position to the related item.
 // Sets o.R.StartingCodon to related.
-// Adds o to related.R.StartingCodonUpepSorfPos.
-func (o *UpepSorfPo) SetStartingCodon(exec boil.Executor, insert bool, related *UpepCodon) error {
+// Adds o to related.R.StartingCodonUpepSorfPositions.
+func (o *UpepSorfPosition) SetStartingCodon(exec boil.Executor, insert bool, related *UpepCodon) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -753,9 +753,9 @@ func (o *UpepSorfPo) SetStartingCodon(exec boil.Executor, insert bool, related *
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+		"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"starting_codon_id"}),
-		strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
 
@@ -771,7 +771,7 @@ func (o *UpepSorfPo) SetStartingCodon(exec boil.Executor, insert bool, related *
 	o.StartingCodonID = related.ID
 
 	if o.R == nil {
-		o.R = &upepSorfPoR{
+		o.R = &upepSorfPositionR{
 			StartingCodon: related,
 		}
 	} else {
@@ -780,47 +780,47 @@ func (o *UpepSorfPo) SetStartingCodon(exec boil.Executor, insert bool, related *
 
 	if related.R == nil {
 		related.R = &upepCodonR{
-			StartingCodonUpepSorfPos: UpepSorfPoSlice{o},
+			StartingCodonUpepSorfPositions: UpepSorfPositionSlice{o},
 		}
 	} else {
-		related.R.StartingCodonUpepSorfPos = append(related.R.StartingCodonUpepSorfPos, o)
+		related.R.StartingCodonUpepSorfPositions = append(related.R.StartingCodonUpepSorfPositions, o)
 	}
 
 	return nil
 }
 
-// SetEndingCodonG of the upep_sorf_po to the related item.
+// SetEndingCodonG of the upep_sorf_position to the related item.
 // Sets o.R.EndingCodon to related.
-// Adds o to related.R.EndingCodonUpepSorfPos.
+// Adds o to related.R.EndingCodonUpepSorfPositions.
 // Uses the global database handle.
-func (o *UpepSorfPo) SetEndingCodonG(insert bool, related *UpepCodon) error {
+func (o *UpepSorfPosition) SetEndingCodonG(insert bool, related *UpepCodon) error {
 	return o.SetEndingCodon(boil.GetDB(), insert, related)
 }
 
-// SetEndingCodonP of the upep_sorf_po to the related item.
+// SetEndingCodonP of the upep_sorf_position to the related item.
 // Sets o.R.EndingCodon to related.
-// Adds o to related.R.EndingCodonUpepSorfPos.
+// Adds o to related.R.EndingCodonUpepSorfPositions.
 // Panics on error.
-func (o *UpepSorfPo) SetEndingCodonP(exec boil.Executor, insert bool, related *UpepCodon) {
+func (o *UpepSorfPosition) SetEndingCodonP(exec boil.Executor, insert bool, related *UpepCodon) {
 	if err := o.SetEndingCodon(exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetEndingCodonGP of the upep_sorf_po to the related item.
+// SetEndingCodonGP of the upep_sorf_position to the related item.
 // Sets o.R.EndingCodon to related.
-// Adds o to related.R.EndingCodonUpepSorfPos.
+// Adds o to related.R.EndingCodonUpepSorfPositions.
 // Uses the global database handle and panics on error.
-func (o *UpepSorfPo) SetEndingCodonGP(insert bool, related *UpepCodon) {
+func (o *UpepSorfPosition) SetEndingCodonGP(insert bool, related *UpepCodon) {
 	if err := o.SetEndingCodon(boil.GetDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetEndingCodon of the upep_sorf_po to the related item.
+// SetEndingCodon of the upep_sorf_position to the related item.
 // Sets o.R.EndingCodon to related.
-// Adds o to related.R.EndingCodonUpepSorfPos.
-func (o *UpepSorfPo) SetEndingCodon(exec boil.Executor, insert bool, related *UpepCodon) error {
+// Adds o to related.R.EndingCodonUpepSorfPositions.
+func (o *UpepSorfPosition) SetEndingCodon(exec boil.Executor, insert bool, related *UpepCodon) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -829,9 +829,9 @@ func (o *UpepSorfPo) SetEndingCodon(exec boil.Executor, insert bool, related *Up
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+		"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"ending_codon_id"}),
-		strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
 
@@ -847,7 +847,7 @@ func (o *UpepSorfPo) SetEndingCodon(exec boil.Executor, insert bool, related *Up
 	o.EndingCodonID = related.ID
 
 	if o.R == nil {
-		o.R = &upepSorfPoR{
+		o.R = &upepSorfPositionR{
 			EndingCodon: related,
 		}
 	} else {
@@ -856,34 +856,34 @@ func (o *UpepSorfPo) SetEndingCodon(exec boil.Executor, insert bool, related *Up
 
 	if related.R == nil {
 		related.R = &upepCodonR{
-			EndingCodonUpepSorfPos: UpepSorfPoSlice{o},
+			EndingCodonUpepSorfPositions: UpepSorfPositionSlice{o},
 		}
 	} else {
-		related.R.EndingCodonUpepSorfPos = append(related.R.EndingCodonUpepSorfPos, o)
+		related.R.EndingCodonUpepSorfPositions = append(related.R.EndingCodonUpepSorfPositions, o)
 	}
 
 	return nil
 }
 
-// UpepSorfPosG retrieves all records.
-func UpepSorfPosG(mods ...qm.QueryMod) upepSorfPoQuery {
-	return UpepSorfPos(boil.GetDB(), mods...)
+// UpepSorfPositionsG retrieves all records.
+func UpepSorfPositionsG(mods ...qm.QueryMod) upepSorfPositionQuery {
+	return UpepSorfPositions(boil.GetDB(), mods...)
 }
 
-// UpepSorfPos retrieves all the records using an executor.
-func UpepSorfPos(exec boil.Executor, mods ...qm.QueryMod) upepSorfPoQuery {
-	mods = append(mods, qm.From("\"upep\".\"upep_sorf_pos\""))
-	return upepSorfPoQuery{NewQuery(exec, mods...)}
+// UpepSorfPositions retrieves all the records using an executor.
+func UpepSorfPositions(exec boil.Executor, mods ...qm.QueryMod) upepSorfPositionQuery {
+	mods = append(mods, qm.From("\"upep\".\"upep_sorf_positions\""))
+	return upepSorfPositionQuery{NewQuery(exec, mods...)}
 }
 
-// FindUpepSorfPoG retrieves a single record by ID.
-func FindUpepSorfPoG(id int64, selectCols ...string) (*UpepSorfPo, error) {
-	return FindUpepSorfPo(boil.GetDB(), id, selectCols...)
+// FindUpepSorfPositionG retrieves a single record by ID.
+func FindUpepSorfPositionG(id int64, selectCols ...string) (*UpepSorfPosition, error) {
+	return FindUpepSorfPosition(boil.GetDB(), id, selectCols...)
 }
 
-// FindUpepSorfPoGP retrieves a single record by ID, and panics on error.
-func FindUpepSorfPoGP(id int64, selectCols ...string) *UpepSorfPo {
-	retobj, err := FindUpepSorfPo(boil.GetDB(), id, selectCols...)
+// FindUpepSorfPositionGP retrieves a single record by ID, and panics on error.
+func FindUpepSorfPositionGP(id int64, selectCols ...string) *UpepSorfPosition {
+	retobj, err := FindUpepSorfPosition(boil.GetDB(), id, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -891,35 +891,35 @@ func FindUpepSorfPoGP(id int64, selectCols ...string) *UpepSorfPo {
 	return retobj
 }
 
-// FindUpepSorfPo retrieves a single record by ID with an executor.
+// FindUpepSorfPosition retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUpepSorfPo(exec boil.Executor, id int64, selectCols ...string) (*UpepSorfPo, error) {
-	upepSorfPoObj := &UpepSorfPo{}
+func FindUpepSorfPosition(exec boil.Executor, id int64, selectCols ...string) (*UpepSorfPosition, error) {
+	upepSorfPositionObj := &UpepSorfPosition{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"upep\".\"upep_sorf_pos\" where \"id\"=$1", sel,
+		"select %s from \"upep\".\"upep_sorf_positions\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(exec, query, id)
 
-	err := q.Bind(upepSorfPoObj)
+	err := q.Bind(upepSorfPositionObj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: unable to select from upep_sorf_pos")
+		return nil, errors.Wrap(err, "models: unable to select from upep_sorf_positions")
 	}
 
-	return upepSorfPoObj, nil
+	return upepSorfPositionObj, nil
 }
 
-// FindUpepSorfPoP retrieves a single record by ID with an executor, and panics on error.
-func FindUpepSorfPoP(exec boil.Executor, id int64, selectCols ...string) *UpepSorfPo {
-	retobj, err := FindUpepSorfPo(exec, id, selectCols...)
+// FindUpepSorfPositionP retrieves a single record by ID with an executor, and panics on error.
+func FindUpepSorfPositionP(exec boil.Executor, id int64, selectCols ...string) *UpepSorfPosition {
+	retobj, err := FindUpepSorfPosition(exec, id, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -928,13 +928,13 @@ func FindUpepSorfPoP(exec boil.Executor, id int64, selectCols ...string) *UpepSo
 }
 
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *UpepSorfPo) InsertG(whitelist ...string) error {
+func (o *UpepSorfPosition) InsertG(whitelist ...string) error {
 	return o.Insert(boil.GetDB(), whitelist...)
 }
 
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *UpepSorfPo) InsertGP(whitelist ...string) {
+func (o *UpepSorfPosition) InsertGP(whitelist ...string) {
 	if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -942,7 +942,7 @@ func (o *UpepSorfPo) InsertGP(whitelist ...string) {
 
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *UpepSorfPo) InsertP(exec boil.Executor, whitelist ...string) {
+func (o *UpepSorfPosition) InsertP(exec boil.Executor, whitelist ...string) {
 	if err := o.Insert(exec, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -953,9 +953,9 @@ func (o *UpepSorfPo) InsertP(exec boil.Executor, whitelist ...string) {
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns without a default value are included (i.e. name, age)
 // - All columns with a default, but non-zero are included (i.e. health = 75)
-func (o *UpepSorfPo) Insert(exec boil.Executor, whitelist ...string) error {
+func (o *UpepSorfPosition) Insert(exec boil.Executor, whitelist ...string) error {
 	if o == nil {
-		return errors.New("models: no upep_sorf_pos provided for insertion")
+		return errors.New("models: no upep_sorf_positions provided for insertion")
 	}
 
 	var err error
@@ -974,34 +974,34 @@ func (o *UpepSorfPo) Insert(exec boil.Executor, whitelist ...string) error {
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(upepSorfPoColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(upepSorfPositionColumnsWithDefault, o)
 
 	key := makeCacheKey(whitelist, nzDefaults)
-	upepSorfPoInsertCacheMut.RLock()
-	cache, cached := upepSorfPoInsertCache[key]
-	upepSorfPoInsertCacheMut.RUnlock()
+	upepSorfPositionInsertCacheMut.RLock()
+	cache, cached := upepSorfPositionInsertCache[key]
+	upepSorfPositionInsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := strmangle.InsertColumnSet(
-			upepSorfPoColumns,
-			upepSorfPoColumnsWithDefault,
-			upepSorfPoColumnsWithoutDefault,
+			upepSorfPositionColumns,
+			upepSorfPositionColumnsWithDefault,
+			upepSorfPositionColumnsWithoutDefault,
 			nzDefaults,
 			whitelist,
 		)
 
-		cache.valueMapping, err = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, wl)
+		cache.valueMapping, err = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, returnColumns)
 		if err != nil {
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"upep\".\"upep_sorf_pos\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"upep\".\"upep_sorf_positions\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"upep\".\"upep_sorf_pos\" DEFAULT VALUES"
+			cache.query = "INSERT INTO \"upep\".\"upep_sorf_positions\" DEFAULT VALUES"
 		}
 
 		var queryOutput, queryReturning string
@@ -1030,50 +1030,50 @@ func (o *UpepSorfPo) Insert(exec boil.Executor, whitelist ...string) error {
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to insert into upep_sorf_pos")
+		return errors.Wrap(err, "models: unable to insert into upep_sorf_positions")
 	}
 
 	if !cached {
-		upepSorfPoInsertCacheMut.Lock()
-		upepSorfPoInsertCache[key] = cache
-		upepSorfPoInsertCacheMut.Unlock()
+		upepSorfPositionInsertCacheMut.Lock()
+		upepSorfPositionInsertCache[key] = cache
+		upepSorfPositionInsertCacheMut.Unlock()
 	}
 
 	return o.doAfterInsertHooks(exec)
 }
 
-// UpdateG a single UpepSorfPo record. See Update for
+// UpdateG a single UpepSorfPosition record. See Update for
 // whitelist behavior description.
-func (o *UpepSorfPo) UpdateG(whitelist ...string) error {
+func (o *UpepSorfPosition) UpdateG(whitelist ...string) error {
 	return o.Update(boil.GetDB(), whitelist...)
 }
 
-// UpdateGP a single UpepSorfPo record.
+// UpdateGP a single UpepSorfPosition record.
 // UpdateGP takes a whitelist of column names that should be updated.
 // Panics on error. See Update for whitelist behavior description.
-func (o *UpepSorfPo) UpdateGP(whitelist ...string) {
+func (o *UpepSorfPosition) UpdateGP(whitelist ...string) {
 	if err := o.Update(boil.GetDB(), whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// UpdateP uses an executor to update the UpepSorfPo, and panics on error.
+// UpdateP uses an executor to update the UpepSorfPosition, and panics on error.
 // See Update for whitelist behavior description.
-func (o *UpepSorfPo) UpdateP(exec boil.Executor, whitelist ...string) {
+func (o *UpepSorfPosition) UpdateP(exec boil.Executor, whitelist ...string) {
 	err := o.Update(exec, whitelist...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// Update uses an executor to update the UpepSorfPo.
+// Update uses an executor to update the UpepSorfPosition.
 // Whitelist behavior: If a whitelist is provided, only the columns given are updated.
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns are inferred to start with
 // - All primary keys are subtracted from this set
 // Update does not automatically update the record in case of default values. Use .Reload()
 // to refresh the records.
-func (o *UpepSorfPo) Update(exec boil.Executor, whitelist ...string) error {
+func (o *UpepSorfPosition) Update(exec boil.Executor, whitelist ...string) error {
 	currTime := time.Now().In(boil.GetLocation())
 
 	o.UpdatedAt.Time = currTime
@@ -1084,14 +1084,14 @@ func (o *UpepSorfPo) Update(exec boil.Executor, whitelist ...string) error {
 		return err
 	}
 	key := makeCacheKey(whitelist, nil)
-	upepSorfPoUpdateCacheMut.RLock()
-	cache, cached := upepSorfPoUpdateCache[key]
-	upepSorfPoUpdateCacheMut.RUnlock()
+	upepSorfPositionUpdateCacheMut.RLock()
+	cache, cached := upepSorfPositionUpdateCache[key]
+	upepSorfPositionUpdateCacheMut.RUnlock()
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet(
-			upepSorfPoColumns,
-			upepSorfPoPrimaryKeyColumns,
+			upepSorfPositionColumns,
+			upepSorfPositionPrimaryKeyColumns,
 			whitelist,
 		)
 
@@ -1099,14 +1099,14 @@ func (o *UpepSorfPo) Update(exec boil.Executor, whitelist ...string) error {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		if len(wl) == 0 {
-			return errors.New("models: unable to update upep_sorf_pos, could not build whitelist")
+			return errors.New("models: unable to update upep_sorf_positions, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
-			strmangle.WhereClause("\"", "\"", len(wl)+1, upepSorfPoPrimaryKeyColumns),
+			strmangle.WhereClause("\"", "\"", len(wl)+1, upepSorfPositionPrimaryKeyColumns),
 		)
-		cache.valueMapping, err = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, append(wl, upepSorfPoPrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, append(wl, upepSorfPositionPrimaryKeyColumns...))
 		if err != nil {
 			return err
 		}
@@ -1121,58 +1121,58 @@ func (o *UpepSorfPo) Update(exec boil.Executor, whitelist ...string) error {
 
 	_, err = exec.Exec(cache.query, values...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to update upep_sorf_pos row")
+		return errors.Wrap(err, "models: unable to update upep_sorf_positions row")
 	}
 
 	if !cached {
-		upepSorfPoUpdateCacheMut.Lock()
-		upepSorfPoUpdateCache[key] = cache
-		upepSorfPoUpdateCacheMut.Unlock()
+		upepSorfPositionUpdateCacheMut.Lock()
+		upepSorfPositionUpdateCache[key] = cache
+		upepSorfPositionUpdateCacheMut.Unlock()
 	}
 
 	return o.doAfterUpdateHooks(exec)
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.
-func (q upepSorfPoQuery) UpdateAllP(cols M) {
+func (q upepSorfPositionQuery) UpdateAllP(cols M) {
 	if err := q.UpdateAll(cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q upepSorfPoQuery) UpdateAll(cols M) error {
+func (q upepSorfPositionQuery) UpdateAll(cols M) error {
 	queries.SetUpdate(q.Query, cols)
 
 	_, err := q.Query.Exec()
 	if err != nil {
-		return errors.Wrap(err, "models: unable to update all for upep_sorf_pos")
+		return errors.Wrap(err, "models: unable to update all for upep_sorf_positions")
 	}
 
 	return nil
 }
 
 // UpdateAllG updates all rows with the specified column values.
-func (o UpepSorfPoSlice) UpdateAllG(cols M) error {
+func (o UpepSorfPositionSlice) UpdateAllG(cols M) error {
 	return o.UpdateAll(boil.GetDB(), cols)
 }
 
 // UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o UpepSorfPoSlice) UpdateAllGP(cols M) {
+func (o UpepSorfPositionSlice) UpdateAllGP(cols M) {
 	if err := o.UpdateAll(boil.GetDB(), cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o UpepSorfPoSlice) UpdateAllP(exec boil.Executor, cols M) {
+func (o UpepSorfPositionSlice) UpdateAllP(exec boil.Executor, cols M) {
 	if err := o.UpdateAll(exec, cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o UpepSorfPoSlice) UpdateAll(exec boil.Executor, cols M) error {
+func (o UpepSorfPositionSlice) UpdateAll(exec boil.Executor, cols M) error {
 	ln := int64(len(o))
 	if ln == 0 {
 		return nil
@@ -1194,13 +1194,13 @@ func (o UpepSorfPoSlice) UpdateAll(exec boil.Executor, cols M) error {
 
 	// Append all of the primary key values for each column
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPoPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPositionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, upepSorfPoPrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, upepSorfPositionPrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1209,19 +1209,19 @@ func (o UpepSorfPoSlice) UpdateAll(exec boil.Executor, cols M) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to update all in upepSorfPo slice")
+		return errors.Wrap(err, "models: unable to update all in upepSorfPosition slice")
 	}
 
 	return nil
 }
 
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *UpepSorfPo) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+func (o *UpepSorfPosition) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
 	return o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...)
 }
 
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *UpepSorfPo) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+func (o *UpepSorfPosition) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
 	if err := o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1229,16 +1229,16 @@ func (o *UpepSorfPo) UpsertGP(updateOnConflict bool, conflictColumns []string, u
 
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *UpepSorfPo) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+func (o *UpepSorfPosition) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
 	if err := o.Upsert(exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *UpepSorfPo) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+func (o *UpepSorfPosition) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
 	if o == nil {
-		return errors.New("models: no upep_sorf_pos provided for upsert")
+		return errors.New("models: no upep_sorf_positions provided for upsert")
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
@@ -1253,7 +1253,7 @@ func (o *UpepSorfPo) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(upepSorfPoColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(upepSorfPositionColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs postgres problems
 	buf := strmangle.GetBuffer()
@@ -1282,43 +1282,43 @@ func (o *UpepSorfPo) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	upepSorfPoUpsertCacheMut.RLock()
-	cache, cached := upepSorfPoUpsertCache[key]
-	upepSorfPoUpsertCacheMut.RUnlock()
+	upepSorfPositionUpsertCacheMut.RLock()
+	cache, cached := upepSorfPositionUpsertCache[key]
+	upepSorfPositionUpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, ret := strmangle.InsertColumnSet(
-			upepSorfPoColumns,
-			upepSorfPoColumnsWithDefault,
-			upepSorfPoColumnsWithoutDefault,
+			upepSorfPositionColumns,
+			upepSorfPositionColumnsWithDefault,
+			upepSorfPositionColumnsWithoutDefault,
 			nzDefaults,
 			whitelist,
 		)
 
 		update := strmangle.UpdateColumnSet(
-			upepSorfPoColumns,
-			upepSorfPoPrimaryKeyColumns,
+			upepSorfPositionColumns,
+			upepSorfPositionPrimaryKeyColumns,
 			updateColumns,
 		)
 		if len(update) == 0 {
-			return errors.New("models: unable to upsert upep_sorf_pos, could not build update column list")
+			return errors.New("models: unable to upsert upep_sorf_positions, could not build update column list")
 		}
 
 		conflict := conflictColumns
 		if len(conflict) == 0 {
-			conflict = make([]string, len(upepSorfPoPrimaryKeyColumns))
-			copy(conflict, upepSorfPoPrimaryKeyColumns)
+			conflict = make([]string, len(upepSorfPositionPrimaryKeyColumns))
+			copy(conflict, upepSorfPositionPrimaryKeyColumns)
 		}
-		cache.query = queries.BuildUpsertQueryPostgres(dialect, "\"upep\".\"upep_sorf_pos\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = queries.BuildUpsertQueryPostgres(dialect, "\"upep\".\"upep_sorf_positions\"", updateOnConflict, ret, update, conflict, insert)
 
-		cache.valueMapping, err = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, insert)
+		cache.valueMapping, err = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(upepSorfPoType, upepSorfPoMapping, ret)
+			cache.retMapping, err = queries.BindMapping(upepSorfPositionType, upepSorfPositionMapping, ret)
 			if err != nil {
 				return err
 			}
@@ -1346,59 +1346,59 @@ func (o *UpepSorfPo) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert upep_sorf_pos")
+		return errors.Wrap(err, "models: unable to upsert upep_sorf_positions")
 	}
 
 	if !cached {
-		upepSorfPoUpsertCacheMut.Lock()
-		upepSorfPoUpsertCache[key] = cache
-		upepSorfPoUpsertCacheMut.Unlock()
+		upepSorfPositionUpsertCacheMut.Lock()
+		upepSorfPositionUpsertCache[key] = cache
+		upepSorfPositionUpsertCacheMut.Unlock()
 	}
 
 	return o.doAfterUpsertHooks(exec)
 }
 
-// DeleteP deletes a single UpepSorfPo record with an executor.
+// DeleteP deletes a single UpepSorfPosition record with an executor.
 // DeleteP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *UpepSorfPo) DeleteP(exec boil.Executor) {
+func (o *UpepSorfPosition) DeleteP(exec boil.Executor) {
 	if err := o.Delete(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// DeleteG deletes a single UpepSorfPo record.
+// DeleteG deletes a single UpepSorfPosition record.
 // DeleteG will match against the primary key column to find the record to delete.
-func (o *UpepSorfPo) DeleteG() error {
+func (o *UpepSorfPosition) DeleteG() error {
 	if o == nil {
-		return errors.New("models: no UpepSorfPo provided for deletion")
+		return errors.New("models: no UpepSorfPosition provided for deletion")
 	}
 
 	return o.Delete(boil.GetDB())
 }
 
-// DeleteGP deletes a single UpepSorfPo record.
+// DeleteGP deletes a single UpepSorfPosition record.
 // DeleteGP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *UpepSorfPo) DeleteGP() {
+func (o *UpepSorfPosition) DeleteGP() {
 	if err := o.DeleteG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// Delete deletes a single UpepSorfPo record with an executor.
+// Delete deletes a single UpepSorfPosition record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *UpepSorfPo) Delete(exec boil.Executor) error {
+func (o *UpepSorfPosition) Delete(exec boil.Executor) error {
 	if o == nil {
-		return errors.New("models: no UpepSorfPo provided for delete")
+		return errors.New("models: no UpepSorfPosition provided for delete")
 	}
 
 	if err := o.doBeforeDeleteHooks(exec); err != nil {
 		return err
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), upepSorfPoPrimaryKeyMapping)
-	sql := "DELETE FROM \"upep\".\"upep_sorf_pos\" WHERE \"id\"=$1"
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), upepSorfPositionPrimaryKeyMapping)
+	sql := "DELETE FROM \"upep\".\"upep_sorf_positions\" WHERE \"id\"=$1"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1407,7 +1407,7 @@ func (o *UpepSorfPo) Delete(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to delete from upep_sorf_pos")
+		return errors.Wrap(err, "models: unable to delete from upep_sorf_positions")
 	}
 
 	if err := o.doAfterDeleteHooks(exec); err != nil {
@@ -1418,61 +1418,61 @@ func (o *UpepSorfPo) Delete(exec boil.Executor) error {
 }
 
 // DeleteAllP deletes all rows, and panics on error.
-func (q upepSorfPoQuery) DeleteAllP() {
+func (q upepSorfPositionQuery) DeleteAllP() {
 	if err := q.DeleteAll(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAll deletes all matching rows.
-func (q upepSorfPoQuery) DeleteAll() error {
+func (q upepSorfPositionQuery) DeleteAll() error {
 	if q.Query == nil {
-		return errors.New("models: no upepSorfPoQuery provided for delete all")
+		return errors.New("models: no upepSorfPositionQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
 	_, err := q.Query.Exec()
 	if err != nil {
-		return errors.Wrap(err, "models: unable to delete all from upep_sorf_pos")
+		return errors.Wrap(err, "models: unable to delete all from upep_sorf_positions")
 	}
 
 	return nil
 }
 
 // DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o UpepSorfPoSlice) DeleteAllGP() {
+func (o UpepSorfPositionSlice) DeleteAllGP() {
 	if err := o.DeleteAllG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAllG deletes all rows in the slice.
-func (o UpepSorfPoSlice) DeleteAllG() error {
+func (o UpepSorfPositionSlice) DeleteAllG() error {
 	if o == nil {
-		return errors.New("models: no UpepSorfPo slice provided for delete all")
+		return errors.New("models: no UpepSorfPosition slice provided for delete all")
 	}
 	return o.DeleteAll(boil.GetDB())
 }
 
 // DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o UpepSorfPoSlice) DeleteAllP(exec boil.Executor) {
+func (o UpepSorfPositionSlice) DeleteAllP(exec boil.Executor) {
 	if err := o.DeleteAll(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o UpepSorfPoSlice) DeleteAll(exec boil.Executor) error {
+func (o UpepSorfPositionSlice) DeleteAll(exec boil.Executor) error {
 	if o == nil {
-		return errors.New("models: no UpepSorfPo slice provided for delete all")
+		return errors.New("models: no UpepSorfPosition slice provided for delete all")
 	}
 
 	if len(o) == 0 {
 		return nil
 	}
 
-	if len(upepSorfPoBeforeDeleteHooks) != 0 {
+	if len(upepSorfPositionBeforeDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doBeforeDeleteHooks(exec); err != nil {
 				return err
@@ -1482,12 +1482,12 @@ func (o UpepSorfPoSlice) DeleteAll(exec boil.Executor) error {
 
 	var args []interface{}
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPoPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPositionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"upep\".\"upep_sorf_pos\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, upepSorfPoPrimaryKeyColumns, len(o))
+	sql := "DELETE FROM \"upep\".\"upep_sorf_positions\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, upepSorfPositionPrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1496,10 +1496,10 @@ func (o UpepSorfPoSlice) DeleteAll(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to delete all from upepSorfPo slice")
+		return errors.Wrap(err, "models: unable to delete all from upepSorfPosition slice")
 	}
 
-	if len(upepSorfPoAfterDeleteHooks) != 0 {
+	if len(upepSorfPositionAfterDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterDeleteHooks(exec); err != nil {
 				return err
@@ -1511,23 +1511,23 @@ func (o UpepSorfPoSlice) DeleteAll(exec boil.Executor) error {
 }
 
 // ReloadGP refetches the object from the database and panics on error.
-func (o *UpepSorfPo) ReloadGP() {
+func (o *UpepSorfPosition) ReloadGP() {
 	if err := o.ReloadG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *UpepSorfPo) ReloadP(exec boil.Executor) {
+func (o *UpepSorfPosition) ReloadP(exec boil.Executor) {
 	if err := o.Reload(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // ReloadG refetches the object from the database using the primary keys.
-func (o *UpepSorfPo) ReloadG() error {
+func (o *UpepSorfPosition) ReloadG() error {
 	if o == nil {
-		return errors.New("models: no UpepSorfPo provided for reload")
+		return errors.New("models: no UpepSorfPosition provided for reload")
 	}
 
 	return o.Reload(boil.GetDB())
@@ -1535,8 +1535,8 @@ func (o *UpepSorfPo) ReloadG() error {
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *UpepSorfPo) Reload(exec boil.Executor) error {
-	ret, err := FindUpepSorfPo(exec, o.ID)
+func (o *UpepSorfPosition) Reload(exec boil.Executor) error {
+	ret, err := FindUpepSorfPosition(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1548,7 +1548,7 @@ func (o *UpepSorfPo) Reload(exec boil.Executor) error {
 // ReloadAllGP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *UpepSorfPoSlice) ReloadAllGP() {
+func (o *UpepSorfPositionSlice) ReloadAllGP() {
 	if err := o.ReloadAllG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1557,7 +1557,7 @@ func (o *UpepSorfPoSlice) ReloadAllGP() {
 // ReloadAllP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *UpepSorfPoSlice) ReloadAllP(exec boil.Executor) {
+func (o *UpepSorfPositionSlice) ReloadAllP(exec boil.Executor) {
 	if err := o.ReloadAll(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1565,9 +1565,9 @@ func (o *UpepSorfPoSlice) ReloadAllP(exec boil.Executor) {
 
 // ReloadAllG refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *UpepSorfPoSlice) ReloadAllG() error {
+func (o *UpepSorfPositionSlice) ReloadAllG() error {
 	if o == nil {
-		return errors.New("models: empty UpepSorfPoSlice provided for reload all")
+		return errors.New("models: empty UpepSorfPositionSlice provided for reload all")
 	}
 
 	return o.ReloadAll(boil.GetDB())
@@ -1575,37 +1575,37 @@ func (o *UpepSorfPoSlice) ReloadAllG() error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *UpepSorfPoSlice) ReloadAll(exec boil.Executor) error {
+func (o *UpepSorfPositionSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
 
-	upepSorfPos := UpepSorfPoSlice{}
+	upepSorfPositions := UpepSorfPositionSlice{}
 	var args []interface{}
 	for _, obj := range *o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPoPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), upepSorfPositionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"upep\".\"upep_sorf_pos\".* FROM \"upep\".\"upep_sorf_pos\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, upepSorfPoPrimaryKeyColumns, len(*o))
+	sql := "SELECT \"upep\".\"upep_sorf_positions\".* FROM \"upep\".\"upep_sorf_positions\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, upepSorfPositionPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(exec, sql, args...)
 
-	err := q.Bind(&upepSorfPos)
+	err := q.Bind(&upepSorfPositions)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to reload all in UpepSorfPoSlice")
+		return errors.Wrap(err, "models: unable to reload all in UpepSorfPositionSlice")
 	}
 
-	*o = upepSorfPos
+	*o = upepSorfPositions
 
 	return nil
 }
 
-// UpepSorfPoExists checks if the UpepSorfPo row exists.
-func UpepSorfPoExists(exec boil.Executor, id int64) (bool, error) {
+// UpepSorfPositionExists checks if the UpepSorfPosition row exists.
+func UpepSorfPositionExists(exec boil.Executor, id int64) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"upep\".\"upep_sorf_pos\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"upep\".\"upep_sorf_positions\" where \"id\"=$1 limit 1)"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1616,20 +1616,20 @@ func UpepSorfPoExists(exec boil.Executor, id int64) (bool, error) {
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "models: unable to check if upep_sorf_pos exists")
+		return false, errors.Wrap(err, "models: unable to check if upep_sorf_positions exists")
 	}
 
 	return exists, nil
 }
 
-// UpepSorfPoExistsG checks if the UpepSorfPo row exists.
-func UpepSorfPoExistsG(id int64) (bool, error) {
-	return UpepSorfPoExists(boil.GetDB(), id)
+// UpepSorfPositionExistsG checks if the UpepSorfPosition row exists.
+func UpepSorfPositionExistsG(id int64) (bool, error) {
+	return UpepSorfPositionExists(boil.GetDB(), id)
 }
 
-// UpepSorfPoExistsGP checks if the UpepSorfPo row exists. Panics on error.
-func UpepSorfPoExistsGP(id int64) bool {
-	e, err := UpepSorfPoExists(boil.GetDB(), id)
+// UpepSorfPositionExistsGP checks if the UpepSorfPosition row exists. Panics on error.
+func UpepSorfPositionExistsGP(id int64) bool {
+	e, err := UpepSorfPositionExists(boil.GetDB(), id)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1637,9 +1637,9 @@ func UpepSorfPoExistsGP(id int64) bool {
 	return e
 }
 
-// UpepSorfPoExistsP checks if the UpepSorfPo row exists. Panics on error.
-func UpepSorfPoExistsP(exec boil.Executor, id int64) bool {
-	e, err := UpepSorfPoExists(exec, id)
+// UpepSorfPositionExistsP checks if the UpepSorfPosition row exists. Panics on error.
+func UpepSorfPositionExistsP(exec boil.Executor, id int64) bool {
+	e, err := UpepSorfPositionExists(exec, id)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}

@@ -63,13 +63,13 @@ var UpepRefSeqEntryColumns = struct {
 
 // upepRefSeqEntryR is where relationships are stored.
 type upepRefSeqEntryR struct {
-	Organism                *UpepOrganism
-	MolecularType           *UpepMolecularType
-	Accession               *UpepAccession
-	Gi                      *UpepGeneIdentifier
-	RefSeqDB                *UpepRefSeqDB
-	RefSeqEntryUpepFeatures UpepFeatureSlice
-	RefSeqEntryUpepSorfPos  UpepSorfPoSlice
+	Organism                     *UpepOrganism
+	MolecularType                *UpepMolecularType
+	Accession                    *UpepAccession
+	Gi                           *UpepGeneIdentifier
+	RefSeqDB                     *UpepRefSeqDB
+	RefSeqEntryUpepFeatures      UpepFeatureSlice
+	RefSeqEntryUpepSorfPositions UpepSorfPositionSlice
 }
 
 // upepRefSeqEntryL is where Load methods for each relationship are stored.
@@ -479,27 +479,27 @@ func (o *UpepRefSeqEntry) RefSeqEntryUpepFeatures(exec boil.Executor, mods ...qm
 	return query
 }
 
-// RefSeqEntryUpepSorfPosG retrieves all the upep_sorf_po's upep sorf pos via ref_seq_entry_id column.
-func (o *UpepRefSeqEntry) RefSeqEntryUpepSorfPosG(mods ...qm.QueryMod) upepSorfPoQuery {
-	return o.RefSeqEntryUpepSorfPos(boil.GetDB(), mods...)
+// RefSeqEntryUpepSorfPositionsG retrieves all the upep_sorf_position's upep sorf positions via ref_seq_entry_id column.
+func (o *UpepRefSeqEntry) RefSeqEntryUpepSorfPositionsG(mods ...qm.QueryMod) upepSorfPositionQuery {
+	return o.RefSeqEntryUpepSorfPositions(boil.GetDB(), mods...)
 }
 
-// RefSeqEntryUpepSorfPos retrieves all the upep_sorf_po's upep sorf pos with an executor via ref_seq_entry_id column.
-func (o *UpepRefSeqEntry) RefSeqEntryUpepSorfPos(exec boil.Executor, mods ...qm.QueryMod) upepSorfPoQuery {
+// RefSeqEntryUpepSorfPositions retrieves all the upep_sorf_position's upep sorf positions with an executor via ref_seq_entry_id column.
+func (o *UpepRefSeqEntry) RefSeqEntryUpepSorfPositions(exec boil.Executor, mods ...qm.QueryMod) upepSorfPositionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"upep\".\"upep_sorf_pos\".\"ref_seq_entry_id\"=?", o.ID),
+		qm.Where("\"upep\".\"upep_sorf_positions\".\"ref_seq_entry_id\"=?", o.ID),
 	)
 
-	query := UpepSorfPos(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_pos\"")
+	query := UpepSorfPositions(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_sorf_positions\"")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_pos\".*"})
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_sorf_positions\".*"})
 	}
 
 	return query
@@ -967,9 +967,9 @@ func (upepRefSeqEntryL) LoadRefSeqEntryUpepFeatures(e boil.Executor, singular bo
 	return nil
 }
 
-// LoadRefSeqEntryUpepSorfPos allows an eager lookup of values, cached into the
+// LoadRefSeqEntryUpepSorfPositions allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (upepRefSeqEntryL) LoadRefSeqEntryUpepSorfPos(e boil.Executor, singular bool, maybeUpepRefSeqEntry interface{}) error {
+func (upepRefSeqEntryL) LoadRefSeqEntryUpepSorfPositions(e boil.Executor, singular bool, maybeUpepRefSeqEntry interface{}) error {
 	var slice []*UpepRefSeqEntry
 	var object *UpepRefSeqEntry
 
@@ -997,7 +997,7 @@ func (upepRefSeqEntryL) LoadRefSeqEntryUpepSorfPos(e boil.Executor, singular boo
 	}
 
 	query := fmt.Sprintf(
-		"select * from \"upep\".\"upep_sorf_pos\" where \"ref_seq_entry_id\" in (%s)",
+		"select * from \"upep\".\"upep_sorf_positions\" where \"ref_seq_entry_id\" in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
 	)
 	if boil.DebugMode {
@@ -1006,16 +1006,16 @@ func (upepRefSeqEntryL) LoadRefSeqEntryUpepSorfPos(e boil.Executor, singular boo
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load upep_sorf_pos")
+		return errors.Wrap(err, "failed to eager load upep_sorf_positions")
 	}
 	defer results.Close()
 
-	var resultSlice []*UpepSorfPo
+	var resultSlice []*UpepSorfPosition
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_pos")
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_sorf_positions")
 	}
 
-	if len(upepSorfPoAfterSelectHooks) != 0 {
+	if len(upepSorfPositionAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -1023,14 +1023,14 @@ func (upepRefSeqEntryL) LoadRefSeqEntryUpepSorfPos(e boil.Executor, singular boo
 		}
 	}
 	if singular {
-		object.R.RefSeqEntryUpepSorfPos = resultSlice
+		object.R.RefSeqEntryUpepSorfPositions = resultSlice
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.RefSeqEntryID {
-				local.R.RefSeqEntryUpepSorfPos = append(local.R.RefSeqEntryUpepSorfPos, foreign)
+				local.R.RefSeqEntryUpepSorfPositions = append(local.R.RefSeqEntryUpepSorfPositions, foreign)
 				break
 			}
 		}
@@ -1808,42 +1808,42 @@ func (o *UpepRefSeqEntry) AddRefSeqEntryUpepFeatures(exec boil.Executor, insert 
 	return nil
 }
 
-// AddRefSeqEntryUpepSorfPosG adds the given related objects to the existing relationships
+// AddRefSeqEntryUpepSorfPositionsG adds the given related objects to the existing relationships
 // of the upep_ref_seq_entry, optionally inserting them as new records.
-// Appends related to o.R.RefSeqEntryUpepSorfPos.
+// Appends related to o.R.RefSeqEntryUpepSorfPositions.
 // Sets related.R.RefSeqEntry appropriately.
 // Uses the global database handle.
-func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPosG(insert bool, related ...*UpepSorfPo) error {
-	return o.AddRefSeqEntryUpepSorfPos(boil.GetDB(), insert, related...)
+func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPositionsG(insert bool, related ...*UpepSorfPosition) error {
+	return o.AddRefSeqEntryUpepSorfPositions(boil.GetDB(), insert, related...)
 }
 
-// AddRefSeqEntryUpepSorfPosP adds the given related objects to the existing relationships
+// AddRefSeqEntryUpepSorfPositionsP adds the given related objects to the existing relationships
 // of the upep_ref_seq_entry, optionally inserting them as new records.
-// Appends related to o.R.RefSeqEntryUpepSorfPos.
+// Appends related to o.R.RefSeqEntryUpepSorfPositions.
 // Sets related.R.RefSeqEntry appropriately.
 // Panics on error.
-func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPosP(exec boil.Executor, insert bool, related ...*UpepSorfPo) {
-	if err := o.AddRefSeqEntryUpepSorfPos(exec, insert, related...); err != nil {
+func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPositionsP(exec boil.Executor, insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddRefSeqEntryUpepSorfPositions(exec, insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddRefSeqEntryUpepSorfPosGP adds the given related objects to the existing relationships
+// AddRefSeqEntryUpepSorfPositionsGP adds the given related objects to the existing relationships
 // of the upep_ref_seq_entry, optionally inserting them as new records.
-// Appends related to o.R.RefSeqEntryUpepSorfPos.
+// Appends related to o.R.RefSeqEntryUpepSorfPositions.
 // Sets related.R.RefSeqEntry appropriately.
 // Uses the global database handle and panics on error.
-func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPosGP(insert bool, related ...*UpepSorfPo) {
-	if err := o.AddRefSeqEntryUpepSorfPos(boil.GetDB(), insert, related...); err != nil {
+func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPositionsGP(insert bool, related ...*UpepSorfPosition) {
+	if err := o.AddRefSeqEntryUpepSorfPositions(boil.GetDB(), insert, related...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// AddRefSeqEntryUpepSorfPos adds the given related objects to the existing relationships
+// AddRefSeqEntryUpepSorfPositions adds the given related objects to the existing relationships
 // of the upep_ref_seq_entry, optionally inserting them as new records.
-// Appends related to o.R.RefSeqEntryUpepSorfPos.
+// Appends related to o.R.RefSeqEntryUpepSorfPositions.
 // Sets related.R.RefSeqEntry appropriately.
-func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPos(exec boil.Executor, insert bool, related ...*UpepSorfPo) error {
+func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPositions(exec boil.Executor, insert bool, related ...*UpepSorfPosition) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -1853,9 +1853,9 @@ func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPos(exec boil.Executor, insert b
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"upep\".\"upep_sorf_pos\" SET %s WHERE %s",
+				"UPDATE \"upep\".\"upep_sorf_positions\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"ref_seq_entry_id"}),
-				strmangle.WhereClause("\"", "\"", 2, upepSorfPoPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, upepSorfPositionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -1874,15 +1874,15 @@ func (o *UpepRefSeqEntry) AddRefSeqEntryUpepSorfPos(exec boil.Executor, insert b
 
 	if o.R == nil {
 		o.R = &upepRefSeqEntryR{
-			RefSeqEntryUpepSorfPos: related,
+			RefSeqEntryUpepSorfPositions: related,
 		}
 	} else {
-		o.R.RefSeqEntryUpepSorfPos = append(o.R.RefSeqEntryUpepSorfPos, related...)
+		o.R.RefSeqEntryUpepSorfPositions = append(o.R.RefSeqEntryUpepSorfPositions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &upepSorfPoR{
+			rel.R = &upepSorfPositionR{
 				RefSeqEntry: o,
 			}
 		} else {

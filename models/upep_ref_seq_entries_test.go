@@ -534,13 +534,13 @@ func testUpepRefSeqEntryToManyRefSeqEntryUpepFeatures(t *testing.T) {
 	}
 }
 
-func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos(t *testing.T) {
+func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPositions(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepRefSeqEntry
-	var b, c UpepSorfPo
+	var b, c UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepRefSeqEntryDBTypes, true, upepRefSeqEntryColumnsWithDefault...); err != nil {
@@ -551,8 +551,8 @@ func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
-	randomize.Struct(seed, &c, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
+	randomize.Struct(seed, &b, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
 
 	b.RefSeqEntryID = a.ID
 	c.RefSeqEntryID = a.ID
@@ -563,13 +563,13 @@ func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	upepSorfPo, err := a.RefSeqEntryUpepSorfPos(tx).All()
+	upepSorfPosition, err := a.RefSeqEntryUpepSorfPositions(tx).All()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
-	for _, v := range upepSorfPo {
+	for _, v := range upepSorfPosition {
 		if v.RefSeqEntryID == b.RefSeqEntryID {
 			bFound = true
 		}
@@ -586,23 +586,23 @@ func testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos(t *testing.T) {
 	}
 
 	slice := UpepRefSeqEntrySlice{&a}
-	if err = a.L.LoadRefSeqEntryUpepSorfPos(tx, false, (*[]*UpepRefSeqEntry)(&slice)); err != nil {
+	if err = a.L.LoadRefSeqEntryUpepSorfPositions(tx, false, (*[]*UpepRefSeqEntry)(&slice)); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.RefSeqEntryUpepSorfPos); got != 2 {
+	if got := len(a.R.RefSeqEntryUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.RefSeqEntryUpepSorfPos = nil
-	if err = a.L.LoadRefSeqEntryUpepSorfPos(tx, true, &a); err != nil {
+	a.R.RefSeqEntryUpepSorfPositions = nil
+	if err = a.L.LoadRefSeqEntryUpepSorfPositions(tx, true, &a); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.RefSeqEntryUpepSorfPos); got != 2 {
+	if got := len(a.R.RefSeqEntryUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
 	if t.Failed() {
-		t.Logf("%#v", upepSorfPo)
+		t.Logf("%#v", upepSorfPosition)
 	}
 }
 
@@ -680,22 +680,22 @@ func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepFeatures(t *testing.T) {
 		}
 	}
 }
-func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPos(t *testing.T) {
+func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPositions(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepRefSeqEntry
-	var b, c, d, e UpepSorfPo
+	var b, c, d, e UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepRefSeqEntryDBTypes, false, strmangle.SetComplement(upepRefSeqEntryPrimaryKeyColumns, upepRefSeqEntryColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*UpepSorfPo{&b, &c, &d, &e}
+	foreigners := []*UpepSorfPosition{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, upepSorfPoDBTypes, false, strmangle.SetComplement(upepSorfPoPrimaryKeyColumns, upepSorfPoColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, upepSorfPositionDBTypes, false, strmangle.SetComplement(upepSorfPositionPrimaryKeyColumns, upepSorfPositionColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -710,13 +710,13 @@ func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*UpepSorfPo{
+	foreignersSplitByInsertion := [][]*UpepSorfPosition{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddRefSeqEntryUpepSorfPos(tx, i != 0, x...)
+		err = a.AddRefSeqEntryUpepSorfPositions(tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -738,14 +738,14 @@ func testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPos(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.RefSeqEntryUpepSorfPos[i*2] != first {
+		if a.R.RefSeqEntryUpepSorfPositions[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.RefSeqEntryUpepSorfPos[i*2+1] != second {
+		if a.R.RefSeqEntryUpepSorfPositions[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.RefSeqEntryUpepSorfPos(tx).Count()
+		count, err := a.RefSeqEntryUpepSorfPositions(tx).Count()
 		if err != nil {
 			t.Fatal(err)
 		}

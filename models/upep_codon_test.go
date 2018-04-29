@@ -462,13 +462,13 @@ func testUpepCodonsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testUpepCodonToManyStartingCodonUpepSorfPos(t *testing.T) {
+func testUpepCodonToManyStartingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepCodon
-	var b, c UpepSorfPo
+	var b, c UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepCodonDBTypes, true, upepCodonColumnsWithDefault...); err != nil {
@@ -479,8 +479,8 @@ func testUpepCodonToManyStartingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
-	randomize.Struct(seed, &c, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
+	randomize.Struct(seed, &b, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
 
 	b.StartingCodonID = a.ID
 	c.StartingCodonID = a.ID
@@ -491,13 +491,13 @@ func testUpepCodonToManyStartingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	upepSorfPo, err := a.StartingCodonUpepSorfPos(tx).All()
+	upepSorfPosition, err := a.StartingCodonUpepSorfPositions(tx).All()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
-	for _, v := range upepSorfPo {
+	for _, v := range upepSorfPosition {
 		if v.StartingCodonID == b.StartingCodonID {
 			bFound = true
 		}
@@ -514,33 +514,33 @@ func testUpepCodonToManyStartingCodonUpepSorfPos(t *testing.T) {
 	}
 
 	slice := UpepCodonSlice{&a}
-	if err = a.L.LoadStartingCodonUpepSorfPos(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
+	if err = a.L.LoadStartingCodonUpepSorfPositions(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StartingCodonUpepSorfPos); got != 2 {
+	if got := len(a.R.StartingCodonUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.StartingCodonUpepSorfPos = nil
-	if err = a.L.LoadStartingCodonUpepSorfPos(tx, true, &a); err != nil {
+	a.R.StartingCodonUpepSorfPositions = nil
+	if err = a.L.LoadStartingCodonUpepSorfPositions(tx, true, &a); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StartingCodonUpepSorfPos); got != 2 {
+	if got := len(a.R.StartingCodonUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
 	if t.Failed() {
-		t.Logf("%#v", upepSorfPo)
+		t.Logf("%#v", upepSorfPosition)
 	}
 }
 
-func testUpepCodonToManyEndingCodonUpepSorfPos(t *testing.T) {
+func testUpepCodonToManyEndingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepCodon
-	var b, c UpepSorfPo
+	var b, c UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepCodonDBTypes, true, upepCodonColumnsWithDefault...); err != nil {
@@ -551,8 +551,8 @@ func testUpepCodonToManyEndingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
-	randomize.Struct(seed, &c, upepSorfPoDBTypes, false, upepSorfPoColumnsWithDefault...)
+	randomize.Struct(seed, &b, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepSorfPositionDBTypes, false, upepSorfPositionColumnsWithDefault...)
 
 	b.EndingCodonID = a.ID
 	c.EndingCodonID = a.ID
@@ -563,13 +563,13 @@ func testUpepCodonToManyEndingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	upepSorfPo, err := a.EndingCodonUpepSorfPos(tx).All()
+	upepSorfPosition, err := a.EndingCodonUpepSorfPositions(tx).All()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
-	for _, v := range upepSorfPo {
+	for _, v := range upepSorfPosition {
 		if v.EndingCodonID == b.EndingCodonID {
 			bFound = true
 		}
@@ -586,42 +586,42 @@ func testUpepCodonToManyEndingCodonUpepSorfPos(t *testing.T) {
 	}
 
 	slice := UpepCodonSlice{&a}
-	if err = a.L.LoadEndingCodonUpepSorfPos(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
+	if err = a.L.LoadEndingCodonUpepSorfPositions(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.EndingCodonUpepSorfPos); got != 2 {
+	if got := len(a.R.EndingCodonUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.EndingCodonUpepSorfPos = nil
-	if err = a.L.LoadEndingCodonUpepSorfPos(tx, true, &a); err != nil {
+	a.R.EndingCodonUpepSorfPositions = nil
+	if err = a.L.LoadEndingCodonUpepSorfPositions(tx, true, &a); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.EndingCodonUpepSorfPos); got != 2 {
+	if got := len(a.R.EndingCodonUpepSorfPositions); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
 	if t.Failed() {
-		t.Logf("%#v", upepSorfPo)
+		t.Logf("%#v", upepSorfPosition)
 	}
 }
 
-func testUpepCodonToManyAddOpStartingCodonUpepSorfPos(t *testing.T) {
+func testUpepCodonToManyAddOpStartingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepCodon
-	var b, c, d, e UpepSorfPo
+	var b, c, d, e UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*UpepSorfPo{&b, &c, &d, &e}
+	foreigners := []*UpepSorfPosition{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, upepSorfPoDBTypes, false, strmangle.SetComplement(upepSorfPoPrimaryKeyColumns, upepSorfPoColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, upepSorfPositionDBTypes, false, strmangle.SetComplement(upepSorfPositionPrimaryKeyColumns, upepSorfPositionColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -636,13 +636,13 @@ func testUpepCodonToManyAddOpStartingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*UpepSorfPo{
+	foreignersSplitByInsertion := [][]*UpepSorfPosition{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddStartingCodonUpepSorfPos(tx, i != 0, x...)
+		err = a.AddStartingCodonUpepSorfPositions(tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -664,14 +664,14 @@ func testUpepCodonToManyAddOpStartingCodonUpepSorfPos(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.StartingCodonUpepSorfPos[i*2] != first {
+		if a.R.StartingCodonUpepSorfPositions[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.StartingCodonUpepSorfPos[i*2+1] != second {
+		if a.R.StartingCodonUpepSorfPositions[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.StartingCodonUpepSorfPos(tx).Count()
+		count, err := a.StartingCodonUpepSorfPositions(tx).Count()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -680,22 +680,22 @@ func testUpepCodonToManyAddOpStartingCodonUpepSorfPos(t *testing.T) {
 		}
 	}
 }
-func testUpepCodonToManyAddOpEndingCodonUpepSorfPos(t *testing.T) {
+func testUpepCodonToManyAddOpEndingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var a UpepCodon
-	var b, c, d, e UpepSorfPo
+	var b, c, d, e UpepSorfPosition
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*UpepSorfPo{&b, &c, &d, &e}
+	foreigners := []*UpepSorfPosition{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, upepSorfPoDBTypes, false, strmangle.SetComplement(upepSorfPoPrimaryKeyColumns, upepSorfPoColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, upepSorfPositionDBTypes, false, strmangle.SetComplement(upepSorfPositionPrimaryKeyColumns, upepSorfPositionColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -710,13 +710,13 @@ func testUpepCodonToManyAddOpEndingCodonUpepSorfPos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*UpepSorfPo{
+	foreignersSplitByInsertion := [][]*UpepSorfPosition{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddEndingCodonUpepSorfPos(tx, i != 0, x...)
+		err = a.AddEndingCodonUpepSorfPositions(tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -738,14 +738,14 @@ func testUpepCodonToManyAddOpEndingCodonUpepSorfPos(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.EndingCodonUpepSorfPos[i*2] != first {
+		if a.R.EndingCodonUpepSorfPositions[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.EndingCodonUpepSorfPos[i*2+1] != second {
+		if a.R.EndingCodonUpepSorfPositions[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.EndingCodonUpepSorfPos(tx).Count()
+		count, err := a.EndingCodonUpepSorfPositions(tx).Count()
 		if err != nil {
 			t.Fatal(err)
 		}

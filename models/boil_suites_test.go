@@ -21,7 +21,7 @@ func TestParent(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganisms)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBS)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntries)
-	t.Run("UpepSorfPos", testUpepSorfPos)
+	t.Run("UpepSorfPositions", testUpepSorfPositions)
 }
 
 func TestDelete(t *testing.T) {
@@ -34,7 +34,7 @@ func TestDelete(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsDelete)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSDelete)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesDelete)
-	t.Run("UpepSorfPos", testUpepSorfPosDelete)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
@@ -47,7 +47,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsQueryDeleteAll)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSQueryDeleteAll)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesQueryDeleteAll)
-	t.Run("UpepSorfPos", testUpepSorfPosQueryDeleteAll)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
@@ -60,7 +60,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsSliceDeleteAll)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSSliceDeleteAll)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesSliceDeleteAll)
-	t.Run("UpepSorfPos", testUpepSorfPosSliceDeleteAll)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
@@ -73,7 +73,7 @@ func TestExists(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsExists)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSExists)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesExists)
-	t.Run("UpepSorfPos", testUpepSorfPosExists)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsExists)
 }
 
 func TestFind(t *testing.T) {
@@ -86,7 +86,7 @@ func TestFind(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsFind)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSFind)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesFind)
-	t.Run("UpepSorfPos", testUpepSorfPosFind)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsFind)
 }
 
 func TestBind(t *testing.T) {
@@ -99,7 +99,7 @@ func TestBind(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsBind)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSBind)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesBind)
-	t.Run("UpepSorfPos", testUpepSorfPosBind)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsBind)
 }
 
 func TestOne(t *testing.T) {
@@ -112,7 +112,7 @@ func TestOne(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsOne)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSOne)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesOne)
-	t.Run("UpepSorfPos", testUpepSorfPosOne)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsOne)
 }
 
 func TestAll(t *testing.T) {
@@ -125,7 +125,7 @@ func TestAll(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsAll)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSAll)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesAll)
-	t.Run("UpepSorfPos", testUpepSorfPosAll)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsAll)
 }
 
 func TestCount(t *testing.T) {
@@ -138,7 +138,7 @@ func TestCount(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsCount)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSCount)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesCount)
-	t.Run("UpepSorfPos", testUpepSorfPosCount)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsCount)
 }
 
 func TestHooks(t *testing.T) {
@@ -151,7 +151,7 @@ func TestHooks(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsHooks)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSHooks)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesHooks)
-	t.Run("UpepSorfPos", testUpepSorfPosHooks)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsHooks)
 }
 
 func TestInsert(t *testing.T) {
@@ -173,8 +173,8 @@ func TestInsert(t *testing.T) {
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSInsertWhitelist)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesInsert)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesInsertWhitelist)
-	t.Run("UpepSorfPos", testUpepSorfPosInsert)
-	t.Run("UpepSorfPos", testUpepSorfPosInsertWhitelist)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsInsert)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsInsertWhitelist)
 }
 
 // TestToOne tests cannot be run in parallel
@@ -186,9 +186,9 @@ func TestToOne(t *testing.T) {
 	t.Run("UpepRefSeqEntryToUpepAccessionUsingAccession", testUpepRefSeqEntryToOneUpepAccessionUsingAccession)
 	t.Run("UpepRefSeqEntryToUpepGeneIdentifierUsingGi", testUpepRefSeqEntryToOneUpepGeneIdentifierUsingGi)
 	t.Run("UpepRefSeqEntryToUpepRefSeqDBUsingRefSeqDB", testUpepRefSeqEntryToOneUpepRefSeqDBUsingRefSeqDB)
-	t.Run("UpepSorfPoToUpepRefSeqEntryUsingRefSeqEntry", testUpepSorfPoToOneUpepRefSeqEntryUsingRefSeqEntry)
-	t.Run("UpepSorfPoToUpepCodonUsingStartingCodon", testUpepSorfPoToOneUpepCodonUsingStartingCodon)
-	t.Run("UpepSorfPoToUpepCodonUsingEndingCodon", testUpepSorfPoToOneUpepCodonUsingEndingCodon)
+	t.Run("UpepSorfPositionToUpepRefSeqEntryUsingRefSeqEntry", testUpepSorfPositionToOneUpepRefSeqEntryUsingRefSeqEntry)
+	t.Run("UpepSorfPositionToUpepCodonUsingStartingCodon", testUpepSorfPositionToOneUpepCodonUsingStartingCodon)
+	t.Run("UpepSorfPositionToUpepCodonUsingEndingCodon", testUpepSorfPositionToOneUpepCodonUsingEndingCodon)
 }
 
 // TestOneToOne tests cannot be run in parallel
@@ -199,14 +199,14 @@ func TestOneToOne(t *testing.T) {}
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("UpepAccessionToAccessionUpepRefSeqEntries", testUpepAccessionToManyAccessionUpepRefSeqEntries)
-	t.Run("UpepCodonToStartingCodonUpepSorfPos", testUpepCodonToManyStartingCodonUpepSorfPos)
-	t.Run("UpepCodonToEndingCodonUpepSorfPos", testUpepCodonToManyEndingCodonUpepSorfPos)
+	t.Run("UpepCodonToStartingCodonUpepSorfPositions", testUpepCodonToManyStartingCodonUpepSorfPositions)
+	t.Run("UpepCodonToEndingCodonUpepSorfPositions", testUpepCodonToManyEndingCodonUpepSorfPositions)
 	t.Run("UpepGeneIdentifierToGiUpepRefSeqEntries", testUpepGeneIdentifierToManyGiUpepRefSeqEntries)
 	t.Run("UpepMolecularTypeToMolecularTypeUpepRefSeqEntries", testUpepMolecularTypeToManyMolecularTypeUpepRefSeqEntries)
 	t.Run("UpepOrganismToOrganismUpepRefSeqEntries", testUpepOrganismToManyOrganismUpepRefSeqEntries)
 	t.Run("UpepRefSeqDBToRefSeqDBUpepRefSeqEntries", testUpepRefSeqDBToManyRefSeqDBUpepRefSeqEntries)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepFeatures", testUpepRefSeqEntryToManyRefSeqEntryUpepFeatures)
-	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPos", testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPos)
+	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPositions", testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPositions)
 }
 
 // TestToOneSet tests cannot be run in parallel
@@ -218,9 +218,9 @@ func TestToOneSet(t *testing.T) {
 	t.Run("UpepRefSeqEntryToUpepAccessionUsingAccession", testUpepRefSeqEntryToOneSetOpUpepAccessionUsingAccession)
 	t.Run("UpepRefSeqEntryToUpepGeneIdentifierUsingGi", testUpepRefSeqEntryToOneSetOpUpepGeneIdentifierUsingGi)
 	t.Run("UpepRefSeqEntryToUpepRefSeqDBUsingRefSeqDB", testUpepRefSeqEntryToOneSetOpUpepRefSeqDBUsingRefSeqDB)
-	t.Run("UpepSorfPoToUpepRefSeqEntryUsingRefSeqEntry", testUpepSorfPoToOneSetOpUpepRefSeqEntryUsingRefSeqEntry)
-	t.Run("UpepSorfPoToUpepCodonUsingStartingCodon", testUpepSorfPoToOneSetOpUpepCodonUsingStartingCodon)
-	t.Run("UpepSorfPoToUpepCodonUsingEndingCodon", testUpepSorfPoToOneSetOpUpepCodonUsingEndingCodon)
+	t.Run("UpepSorfPositionToUpepRefSeqEntryUsingRefSeqEntry", testUpepSorfPositionToOneSetOpUpepRefSeqEntryUsingRefSeqEntry)
+	t.Run("UpepSorfPositionToUpepCodonUsingStartingCodon", testUpepSorfPositionToOneSetOpUpepCodonUsingStartingCodon)
+	t.Run("UpepSorfPositionToUpepCodonUsingEndingCodon", testUpepSorfPositionToOneSetOpUpepCodonUsingEndingCodon)
 }
 
 // TestToOneRemove tests cannot be run in parallel
@@ -245,14 +245,14 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("UpepAccessionToAccessionUpepRefSeqEntries", testUpepAccessionToManyAddOpAccessionUpepRefSeqEntries)
-	t.Run("UpepCodonToStartingCodonUpepSorfPos", testUpepCodonToManyAddOpStartingCodonUpepSorfPos)
-	t.Run("UpepCodonToEndingCodonUpepSorfPos", testUpepCodonToManyAddOpEndingCodonUpepSorfPos)
+	t.Run("UpepCodonToStartingCodonUpepSorfPositions", testUpepCodonToManyAddOpStartingCodonUpepSorfPositions)
+	t.Run("UpepCodonToEndingCodonUpepSorfPositions", testUpepCodonToManyAddOpEndingCodonUpepSorfPositions)
 	t.Run("UpepGeneIdentifierToGiUpepRefSeqEntries", testUpepGeneIdentifierToManyAddOpGiUpepRefSeqEntries)
 	t.Run("UpepMolecularTypeToMolecularTypeUpepRefSeqEntries", testUpepMolecularTypeToManyAddOpMolecularTypeUpepRefSeqEntries)
 	t.Run("UpepOrganismToOrganismUpepRefSeqEntries", testUpepOrganismToManyAddOpOrganismUpepRefSeqEntries)
 	t.Run("UpepRefSeqDBToRefSeqDBUpepRefSeqEntries", testUpepRefSeqDBToManyAddOpRefSeqDBUpepRefSeqEntries)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepFeatures", testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepFeatures)
-	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPos", testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPos)
+	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPositions", testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPositions)
 }
 
 // TestToManySet tests cannot be run in parallel
@@ -285,7 +285,7 @@ func TestReload(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsReload)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSReload)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesReload)
-	t.Run("UpepSorfPos", testUpepSorfPosReload)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsReload)
 }
 
 func TestReloadAll(t *testing.T) {
@@ -298,7 +298,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsReloadAll)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSReloadAll)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesReloadAll)
-	t.Run("UpepSorfPos", testUpepSorfPosReloadAll)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsReloadAll)
 }
 
 func TestSelect(t *testing.T) {
@@ -311,7 +311,7 @@ func TestSelect(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsSelect)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSSelect)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesSelect)
-	t.Run("UpepSorfPos", testUpepSorfPosSelect)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsSelect)
 }
 
 func TestUpdate(t *testing.T) {
@@ -324,7 +324,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsUpdate)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSUpdate)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesUpdate)
-	t.Run("UpepSorfPos", testUpepSorfPosUpdate)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
@@ -337,7 +337,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsSliceUpdateAll)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSSliceUpdateAll)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesSliceUpdateAll)
-	t.Run("UpepSorfPos", testUpepSorfPosSliceUpdateAll)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsSliceUpdateAll)
 }
 
 func TestUpsert(t *testing.T) {
@@ -350,5 +350,5 @@ func TestUpsert(t *testing.T) {
 	t.Run("UpepOrganisms", testUpepOrganismsUpsert)
 	t.Run("UpepRefSeqDBS", testUpepRefSeqDBSUpsert)
 	t.Run("UpepRefSeqEntries", testUpepRefSeqEntriesUpsert)
-	t.Run("UpepSorfPos", testUpepSorfPosUpsert)
+	t.Run("UpepSorfPositions", testUpepSorfPositionsUpsert)
 }
