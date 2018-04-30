@@ -33,6 +33,11 @@ var releaseMap = map[string]string{
 	"Bacteria": "bacteria",
 }
 
+var initCodons = map[string][]string{
+	"start": []string{"AUG", "CUG", "UUG", "GUG", "ACG", "AUA", "AUU", "AAG", "AGG"},
+	"end": []string{"TAG", "TAA", "TGA"},
+}
+
 type RefSInf struct {
 	RefSeq models.UpepRefSeqEntry
 	Features []models.UpepFeature
@@ -44,6 +49,12 @@ type RefSInf struct {
 
 func Truncate(db *sql.DB) {
 	r := `TRUNCATE TABLE upep.upep_accessions
+    RESTART IDENTITY
+    CASCADE;
+TRUNCATE TABLE upep.upep_blast_db
+    RESTART IDENTITY
+    CASCADE;
+TRUNCATE TABLE upep.upep_codon
     RESTART IDENTITY
     CASCADE;
 TRUNCATE TABLE upep.upep_features
@@ -62,6 +73,9 @@ TRUNCATE TABLE upep.upep_ref_seq_db
     RESTART IDENTITY
     CASCADE;
 TRUNCATE TABLE upep.upep_ref_seq_entries
+    RESTART IDENTITY
+    CASCADE;
+TRUNCATE TABLE upep.upep_sorf_positions
     RESTART IDENTITY
     CASCADE;`
     db.Exec(r)
@@ -98,6 +112,46 @@ func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
 		close(EnChan)
 	}()
 	return EnChan
+}
+
+func InitCodons(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Panicln(err)
+		return err
+	}
+	for _, v := range initCodons["start"] {
+		c := models.UpepCodon{Sequence:v, StartingCodon:true}
+		err := c.Insert(tx)
+		if err != nil {
+			tx.Rollback()
+			log.Panicln(err)
+			return err
+		}
+	}
+	for _, v := range initCodons["end"] {
+		c := models.UpepCodon{Sequence:v, EndingCodon:true}
+		err := c.Insert(tx)
+		if err != nil {
+			tx.Rollback()
+			log.Panicln(err)
+			return err
+		}
+	}
+	tx.Commit()
+	return err
+}
+
+func GetAllCodons(db *sql.DB) ([]*models.UpepCodon, []*models.UpepCodon) {
+	startingCods, err := models.UpepCodons(db, qm.Where("starting_codon = ?", true)).All()
+	if err != nil {
+		log.Panicln(err)
+	}
+	endingCods, err := models.UpepCodons(db, qm.Where("ending_codon = ?", true)).All()
+	if err != nil {
+		log.Panicln(err)
+	}
+	return startingCods, endingCods
 }
 
 func GetDownloadedRefSeqDB (rootPath string) []*models.UpepRefSeqDB {
@@ -199,7 +253,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 					if !strings.HasPrefix(r, "      ") {
 						feature := reFeature.FindAllStringSubmatch(r[5:], -1)
 						if len(feature) > 0 {
-							f := models.UpepFeature{Name: feature[0][1]}
+							f := models.UpepFeature{Name: strings.ToUpper(feature[0][1])}
 							if strings.Contains(feature[0][2], "<") {
 								start, err := strconv.Atoi(strings.TrimPrefix(feature[0][2], "<"))
 								if err != nil {
@@ -239,7 +293,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 	return sqlChan
 }
 
-func ReadRefSeqDB(path string, source int64, db *sql.DB) {
+func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon) {
 	sqlChan := ParseRefSeqDB(path, source)
 
 	molecularTypeMap := make(map[string]models.UpepMolecularType)
@@ -296,11 +350,33 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB) {
 			tx.Rollback()
 			log.Panicln(res.RefSeq)
 		}
+		var featureI int
 		for i := range res.Features {
 			res.Features[i].RefSeqEntryID = res.RefSeq.ID
+			if res.Features[i].Name == "CDS" {
+				featureI = i
+			}
 			res.Features[i].Insert(tx)
 		}
 		tx.Commit()
+		if featureI > 0 {
+			if (res.Features[featureI].FeatureStart-1) >= 6 {
+				cUpep := ParseUpep(res.RefSeq, res.Features[featureI].FeatureStart-1, 100, startingCodons, endingCodons, db)
+				tx, err := db.Begin()
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(res.RefSeq)
+				}
+				for c := range cUpep {
+					err := c.Insert(tx)
+					if err != nil {
+						tx.Rollback()
+						log.Panicln(res.RefSeq)
+					}
+				}
+				tx.Commit()
+			}
+		}
 		count ++
 	}
 }
@@ -343,6 +419,7 @@ func GetRemoteReleaseVersion(client *ftp.ServerConn) (ver int) {
 }
 
 func DownloadToTemp(client *ftp.ServerConn, fileName string) {
+	log.Printf("Downloading %v", fileName)
 	rn, err := client.Retr(base + fileName)
 	if err != nil {
 		log.Panicln(err)
@@ -360,28 +437,39 @@ func DownloadToTemp(client *ftp.ServerConn, fileName string) {
 	log.Printf("Downloaded %v (%v bytes)", fileName,n)
 }
 
-func ParseUpep(seq string, codingSegStart int, grace int, codons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) {
-	seqLen := len(seq)
-	var codon *models.UpepCodon
-	var sorf models.UpepSorfPosition
-	for i, _ := range seq[:codingSegStart-1] {
-		if i <= (seqLen-3) {
-			if val, ok := endingCodons[seq[i:i+3]]; ok {
-				sorf.EndingPosition = i
-				codon = val
-				break
+func ParseUpep(refseq models.UpepRefSeqEntry, codingSegStart int, grace int, startingCodons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) chan *models.UpepSorfPosition{
+	c := make(chan *models.UpepSorfPosition)
+	go func() {
+		seqLen := len(refseq.RefSeqSequence)
+		var codon *models.UpepCodon
+		var sorf models.UpepSorfPosition
+		for i, _ := range refseq.RefSeqSequence[:codingSegStart-1] {
+			if i <= (seqLen-3) {
+				if val, ok := endingCodons[refseq.RefSeqSequence[i:i+3]]; ok {
+					sorf.EndingPosition = i
+					codon = val
+					break
+				}
 			}
 		}
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		log.Panicln(err)
-	}
-	for _, v := range codons {
-		s := strings.Index(seq[:sorf.EndingPosition], v.Sequence)
-		if s != -1 {
-			tx.
-		}
-	}
+		for _, v := range startingCodons {
+			s := strings.Index(refseq.RefSeqSequence[:sorf.EndingPosition], v.Sequence)
+			if s != -1 {
+				seqL := sorf.EndingPosition - s
+				if (seqL%3 == 0) && (seqL <= grace) {
+					orf := models.UpepSorfPosition{
+						StartingPosition: s + 1,
+						EndingPosition:   sorf.EndingPosition + 3,
+						RefSeqEntryID:    refseq.ID,
+						StartingCodonID:  v.ID,
+						EndingCodonID:    codon.ID,
+					}
+					c <- &orf
 
+				}
+			}
+		}
+		close(c)
+	}()
+	return c
 }

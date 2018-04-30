@@ -67,8 +67,8 @@ type upepSorfPositionL struct{}
 
 var (
 	upepSorfPositionColumns               = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
-	upepSorfPositionColumnsWithoutDefault = []string{"id", "created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
-	upepSorfPositionColumnsWithDefault    = []string{}
+	upepSorfPositionColumnsWithoutDefault = []string{"created_at", "updated_at", "starting_position", "ending_position", "ref_seq_entry_id", "starting_codon_id", "ending_codon_id"}
+	upepSorfPositionColumnsWithDefault    = []string{"id"}
 	upepSorfPositionPrimaryKeyColumns     = []string{"id"}
 )
 

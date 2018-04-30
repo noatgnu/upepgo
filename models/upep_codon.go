@@ -60,8 +60,8 @@ type upepCodonL struct{}
 
 var (
 	upepCodonColumns               = []string{"created_at", "updated_at", "starting_codon", "ending_codon", "sequence", "id"}
-	upepCodonColumnsWithoutDefault = []string{"created_at", "updated_at", "sequence", "id"}
-	upepCodonColumnsWithDefault    = []string{"starting_codon", "ending_codon"}
+	upepCodonColumnsWithoutDefault = []string{"created_at", "updated_at", "sequence"}
+	upepCodonColumnsWithDefault    = []string{"starting_codon", "ending_codon", "id"}
 	upepCodonPrimaryKeyColumns     = []string{"id"}
 )
 

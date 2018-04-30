@@ -18,6 +18,7 @@ var pass = flag.String("pass", "", "User password")
 var sslmode = flag.String("ssl", "", "SSL Mode")
 var port = flag.Int("port", 5432, "Database port")
 var runMode = flag.Int("mode", 0, "0 - WebServer \n 1 - Download DBs \n 2 - Process DBs \n 3 - Download and Process DBs \n 4 - Show DB Version")
+var initCodon = flag.Bool("codon", false, "Populate Starting and Ending Codons Table")
 
 func main()  {
 	flag.Parse()
@@ -28,10 +29,18 @@ func main()  {
 	}
 	refseqdb.Truncate(db)
 	var refseq models.UpepRefSeqDB
+	if *initCodon {
+		refseqdb.InitCodons(db)
+	}
 	refseq.Name = "Complete"
 	refseq.Insert(db)
 	ti := time.Now()
-	refseqdb.ReadRefSeqDB("temp/complete.1034.rna.gbff.gz", refseq.ID, db)
+	startingCodons, endingCodons := refseqdb.GetAllCodons(db)
+	eMap := make(map[string]*models.UpepCodon)
+	for _,v := range endingCodons {
+		eMap[v.Sequence] = v
+	}
+	refseqdb.ReadRefSeqDB("temp/complete.1034.rna.gbff.gz", refseq.ID, db, startingCodons, eMap)
 	log.Println(time.Since(ti))
 	defer db.Close()
 }
