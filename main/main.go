@@ -9,6 +9,7 @@ import (
 	"time"
 	"flag"
 	"fmt"
+	"upepgo/helper"
 )
 
 var driver = flag.String("driver", "postgres", "Name of database driver to be used")
@@ -30,6 +31,8 @@ func main()  {
 	refseqdb.Truncate(db)
 	var refseq models.UpepRefSeqDB
 	if *initCodon {
+		helper.DownMigrations(db)
+		helper.UpMigrations(db)
 		refseqdb.InitCodons(db)
 	}
 	refseq.Name = "Complete"
