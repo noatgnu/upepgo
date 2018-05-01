@@ -29,12 +29,13 @@ func main()  {
 		log.Fatalln(err)
 	}
 	refseqdb.Truncate(db)
-	var refseq models.UpepRefSeqDB
+
 	if *initCodon {
 		helper.DownMigrations(db)
 		helper.UpMigrations(db)
 		refseqdb.InitCodons(db)
 	}
+	var refseq models.UpepRefSeqDB
 	refseq.Name = "Complete"
 	refseq.Insert(db)
 	ti := time.Now()
