@@ -293,7 +293,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 	return sqlChan
 }
 
-func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon) {
+func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon) {
 	sqlChan := ParseRefSeqDB(path, source)
 
 	molecularTypeMap := make(map[string]models.UpepMolecularType)
@@ -361,7 +361,7 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons []*model
 		tx.Commit()
 		if featureI > 0 {
 			if (res.Features[featureI].FeatureStart-1) >= 6 {
-				cUpep := ParseUpep(res.RefSeq, res.Features[featureI].FeatureStart-1, 100, startingCodons, endingCodons, db)
+				cUpep := ParseUpep(res.RefSeq, res.Features[featureI].FeatureEnd, 100, startingCodons, endingCodons, db)
 				tx, err := db.Begin()
 				if err != nil {
 					tx.Rollback()
@@ -437,35 +437,28 @@ func DownloadToTemp(client *ftp.ServerConn, fileName string) {
 	log.Printf("Downloaded %v (%v bytes)", fileName,n)
 }
 
-func ParseUpep(refseq models.UpepRefSeqEntry, codingSegStart int, grace int, startingCodons []*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) chan *models.UpepSorfPosition{
+func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, grace int, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) chan *models.UpepSorfPosition{
 	c := make(chan *models.UpepSorfPosition)
 	go func() {
-		seqLen := len(refseq.RefSeqSequence)
-		var codon *models.UpepCodon
-		var sorf models.UpepSorfPosition
-		for i, _ := range refseq.RefSeqSequence[:codingSegStart-1] {
-			if i <= (seqLen-3) {
-				if val, ok := endingCodons[refseq.RefSeqSequence[i:i+3]]; ok {
-					sorf.EndingPosition = i
-					codon = val
-					break
-				}
-			}
+		frames := make(map[int]models.UpepSorfPosition)
+		for i:= 0; i < 3; i++ {
+			frames[i] = models.UpepSorfPosition{}
 		}
-		for _, v := range startingCodons {
-			s := strings.Index(refseq.RefSeqSequence[:sorf.EndingPosition], v.Sequence)
-			if s != -1 {
-				seqL := sorf.EndingPosition - s
-				if (seqL%3 == 0) && (seqL <= grace) {
-					orf := models.UpepSorfPosition{
-						StartingPosition: s + 1,
-						EndingPosition:   sorf.EndingPosition + 3,
+		for i := 0; i < (searchEnd-3); i+=3 {
+			for k, _ := range frames {
+				start := i+k
+				end := i+k+3
+				if val, ok := startingCodons[refseq.RefSeqSequence[start:end]]; ok {
+					frames[k] =  models.UpepSorfPosition{
+						StartingPosition: start,
 						RefSeqEntryID:    refseq.ID,
-						StartingCodonID:  v.ID,
-						EndingCodonID:    codon.ID,
+						StartingCodonID:  val.ID,
 					}
-					c <- &orf
-
+				} else if val, ok := endingCodons[refseq.RefSeqSequence[start:end]]; ok {
+					f := frames[k]
+					f.EndingPosition = end
+					f.EndingCodonID = val.ID
+					c <- &f
 				}
 			}
 		}

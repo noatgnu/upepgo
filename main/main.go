@@ -44,7 +44,11 @@ func main()  {
 	for _,v := range endingCodons {
 		eMap[v.Sequence] = v
 	}
-	refseqdb.ReadRefSeqDB("temp/complete.1034.rna.gbff.gz", refseq.ID, db, startingCodons, eMap)
+	sMap := make(map[string]*models.UpepCodon)
+	for _,v := range endingCodons {
+		sMap[v.Sequence] = v
+	}
+	refseqdb.ReadRefSeqDB("temp/complete.1034.rna.gbff.gz", refseq.ID, db, sMap, eMap)
 	log.Println(time.Since(ti))
 	defer db.Close()
 }
