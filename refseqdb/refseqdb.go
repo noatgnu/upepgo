@@ -47,6 +47,7 @@ type RefSInf struct {
 	GI models.UpepGeneIdentifier
 }
 
+
 func Truncate(db *sql.DB) {
 	r := `TRUNCATE TABLE upep.upep_accessions
     RESTART IDENTITY
@@ -350,32 +351,36 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[stri
 			tx.Rollback()
 			log.Panicln(res.RefSeq)
 		}
-		var featureI int
+		var CDS *models.UpepFeature
 		for i := range res.Features {
 			res.Features[i].RefSeqEntryID = res.RefSeq.ID
 			if res.Features[i].Name == "CDS" {
-				featureI = i
+				CDS = &res.Features[i]
 			}
 			res.Features[i].Insert(tx)
 		}
 		tx.Commit()
-		if featureI > 0 {
-			if (res.Features[featureI].FeatureStart-1) >= 6 {
-				cUpep := ParseUpep(res.RefSeq, res.Features[featureI].FeatureEnd, 100, startingCodons, endingCodons, db)
-				tx, err := db.Begin()
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(res.RefSeq)
-				}
-				for c := range cUpep {
+		if CDS.Name == "CDS" {
+			cUpep := ParseUpep(res.RefSeq, CDS.FeatureEnd, startingCodons, endingCodons, db)
+			tx, err := db.Begin()
+			if err != nil {
+				tx.Rollback()
+				log.Panicln(res.RefSeq)
+			}
+			for c := range cUpep {
+				sorfLen := c.EndingPosition-c.StartingPosition
+				if (c.StartingPosition != CDS.FeatureStart) && (15<=sorfLen) && (sorfLen <=600){
 					err := c.Insert(tx)
 					if err != nil {
 						tx.Rollback()
-						log.Panicln(res.RefSeq)
+						log.Println(c.RefSeqEntryID)
+						log.Println(c)
+						log.Panicln(err)
+
 					}
 				}
-				tx.Commit()
 			}
+			tx.Commit()
 		}
 		count ++
 	}
@@ -437,7 +442,7 @@ func DownloadToTemp(client *ftp.ServerConn, fileName string) {
 	log.Printf("Downloaded %v (%v bytes)", fileName,n)
 }
 
-func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, grace int, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) chan *models.UpepSorfPosition{
+func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, db *sql.DB) chan *models.UpepSorfPosition{
 	c := make(chan *models.UpepSorfPosition)
 	go func() {
 		frames := make(map[int]models.UpepSorfPosition)
@@ -448,17 +453,24 @@ func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, grace int, starting
 			for k, _ := range frames {
 				start := i+k
 				end := i+k+3
-				if val, ok := startingCodons[refseq.RefSeqSequence[start:end]]; ok {
-					frames[k] =  models.UpepSorfPosition{
-						StartingPosition: start,
-						RefSeqEntryID:    refseq.ID,
-						StartingCodonID:  val.ID,
+				if end < searchEnd {
+					if val, ok := startingCodons[refseq.RefSeqSequence[start:end]]; ok {
+						frames[k] =  models.UpepSorfPosition{
+							StartingPosition: start+1,
+							RefSeqEntryID:    refseq.ID,
+							StartingCodonID:  val.ID,
+						}
+					} else if val, ok := endingCodons[refseq.RefSeqSequence[start:end]]; ok {
+						if frames[k].StartingPosition != 0 {
+							f := frames[k]
+							f.EndingPosition = end
+							f.EndingCodonID = val.ID
+							c <- &f
+							frames[k] = models.UpepSorfPosition{}
+						}
 					}
-				} else if val, ok := endingCodons[refseq.RefSeqSequence[start:end]]; ok {
-					f := frames[k]
-					f.EndingPosition = end
-					f.EndingCodonID = val.ID
-					c <- &f
+				} else {
+					break
 				}
 			}
 		}
