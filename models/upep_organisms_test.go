@@ -784,6 +784,112 @@ func testUpepOrganismToManyRemoveOpOrganismUpepRefSeqEntries(t *testing.T) {
 	}
 }
 
+func testUpepOrganismToOneUpepRefSeqDBUsingUpepRefSeqDB(t *testing.T) {
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var local UpepOrganism
+	var foreign UpepRefSeqDB
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, upepOrganismDBTypes, false, upepOrganismColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepOrganism struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, upepRefSeqDBDBTypes, false, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := foreign.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	local.UpepRefSeqDBID = foreign.ID
+	if err := local.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.UpepRefSeqDB(tx).One()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	slice := UpepOrganismSlice{&local}
+	if err = local.L.LoadUpepRefSeqDB(tx, false, (*[]*UpepOrganism)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.UpepRefSeqDB == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.UpepRefSeqDB = nil
+	if err = local.L.LoadUpepRefSeqDB(tx, true, &local); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.UpepRefSeqDB == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testUpepOrganismToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepOrganism
+	var b, c UpepRefSeqDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepOrganismDBTypes, false, strmangle.SetComplement(upepOrganismPrimaryKeyColumns, upepOrganismColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*UpepRefSeqDB{&b, &c} {
+		err = a.SetUpepRefSeqDB(tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.UpepRefSeqDB != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.UpepOrganisms[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.UpepRefSeqDBID != x.ID {
+			t.Error("foreign key was wrong value", a.UpepRefSeqDBID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.UpepRefSeqDBID))
+		reflect.Indirect(reflect.ValueOf(&a.UpepRefSeqDBID)).Set(zero)
+
+		if err = a.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.UpepRefSeqDBID != x.ID {
+			t.Error("foreign key was wrong value", a.UpepRefSeqDBID, x.ID)
+		}
+	}
+}
 func testUpepOrganismsReload(t *testing.T) {
 	t.Parallel()
 
@@ -854,7 +960,7 @@ func testUpepOrganismsSelect(t *testing.T) {
 }
 
 var (
-	upepOrganismDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp with time zone`}
+	upepOrganismDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `ID`: `bigint`, `Name`: `text`, `UpdatedAt`: `timestamp with time zone`, `UpepRefSeqDBID`: `bigint`}
 	_                   = bytes.MinRead
 )
 

@@ -1,0 +1,13 @@
+{
+  "Temp": "./temp",
+  "Blastdb": "./blastdb",
+  "Blast": "F:/ncbi-blast-2.7.1+/bin/blastn.exe",
+  "MakeBlastDB": "F:/ncbi-blast-2.7.1+/bin/makeblastdb.exe",
+  "DBDriver": "postgres",
+  "DBName": "upepgo",
+  "DBUser": "postgres",
+  "DBPass": "",
+  "DBSSL": "disable",
+  "DBPort": 5432,
+  "DBRunmode": 0
+}

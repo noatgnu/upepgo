@@ -1,29 +1,7 @@
 
 -- +migrate Up
 
-create table upep.upep_gene_identifiers
-(
-	id bigserial not null
-		constraint upep_gis_id_pk
-			primary key,
-	created_at timestamp with time zone,
-	updated_at timestamp with time zone,
-	gi bigint not null
-)
-;
-
-create table upep.upep_accessions
-(
-	id bigserial not null
-		constraint upep_accessions_pkey
-			primary key,
-	created_at timestamp with time zone,
-	updated_at timestamp with time zone,
-	accession text not null
-)
-;
-
-create table upep.upep_ref_seq_db
+create table if not exists upep.upep_ref_seq_db
 (
 	id bigserial not null
 		constraint upep_ref_seq_db_pkey
@@ -35,18 +13,51 @@ create table upep.upep_ref_seq_db
 )
 ;
 
-create table upep.upep_organisms
+create table if not exists upep.upep_organisms
 (
 	id bigserial not null
 		constraint upep_organisms_pkey
 			primary key,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone,
-	name text not null
+	name text not null,
+	upep_ref_seq_db_id bigint not null
+		constraint upep_organisms_upep_ref_seq_db_id_fk
+			references upep.upep_ref_seq_db
+			ON DELETE CASCADE ON UPDATE CASCADE
 )
 ;
 
-create table upep.upep_molecular_types
+create table if not exists upep.upep_gene_identifiers
+(
+	id bigserial not null
+		constraint upep_gis_id_pk
+			primary key,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone,
+	gi bigint not null,
+	upep_ref_seq_db_id bigint not null
+		constraint upep_gene_identifiers_upep_ref_seq_db_id_fk
+			references upep.upep_ref_seq_db
+)
+;
+
+create table if not exists upep.upep_accessions
+(
+	id bigserial not null
+		constraint upep_accessions_pkey
+			primary key,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone,
+	accession text not null,
+	upep_ref_seq_db_id bigint not null
+		constraint upep_accessions_upep_ref_seq_db_id_fk
+			references upep.upep_ref_seq_db
+				on update cascade on delete cascade
+)
+;
+
+create table if not exists upep.upep_molecular_types
 (
 	id bigserial not null
 		constraint upep_molecular_types_pkey
@@ -57,7 +68,7 @@ create table upep.upep_molecular_types
 )
 ;
 
-create table upep.upep_ref_seq_entries
+create table if not exists upep.upep_ref_seq_entries
 (
 	id bigserial not null
 		constraint upep_ref_seq_entries_pkey
@@ -67,24 +78,29 @@ create table upep.upep_ref_seq_entries
 	name varchar(20),
 	organism_id bigint
 		constraint upep_ref_seq_entries_upep_organisms_id_fk
-			references upep.upep_organisms,
+			references upep.upep_organisms
+				on update cascade on delete cascade,
 	molecular_type_id bigint
 		constraint upep_ref_seq_entries_upep_molecular_types_id_fk
-			references upep.upep_molecular_types,
+			references upep.upep_molecular_types
+				on update cascade on delete cascade,
 	accession_id bigint
 		constraint upep_ref_seq_entries_upep_accessions_id_fk
-			references upep.upep_accessions,
+			references upep.upep_accessions
+				on update cascade on delete cascade,
 	gi_id bigint
 		constraint upep_ref_seq_entries_upep_gis_id_fk
-			references upep.upep_gene_identifiers,
+			references upep.upep_gene_identifiers
+				on update cascade on delete cascade,
 	ref_seq_db_id bigint
 		constraint upep_ref_seq_entries_upep_ref_seq_db_id_fk
-			references upep.upep_ref_seq_db,
+			references upep.upep_ref_seq_db
+				on update cascade on delete cascade,
 	ref_seq_sequence text not null
 )
 ;
 
-create table upep.upep_features
+create table if not exists upep.upep_features
 (
 	id bigserial not null
 		constraint upep_features_pkey
@@ -99,38 +115,56 @@ create table upep.upep_features
 	ref_seq_entry_id bigint not null
 		constraint upep_features_upep_ref_seq_entries_id_fk
 			references upep.upep_ref_seq_entries
+				on update cascade on delete cascade
 )
 ;
 
-create table upep.upep_blast_db
+create table if not exists upep.upep_blast_db
 (
-	id bigint not null
+	id bigserial not null
 		constraint upep_blast_db_pkey
 			primary key,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone,
 	title text not null,
 	path text not null,
-	description text not null
+	description text not null,
+	upep_ref_seq_db_id bigint not null
+		constraint upep_blast_db_upep_ref_seq_db_id_fk
+			references upep.upep_ref_seq_db
+				on update cascade on delete cascade,
+	starting_codon_id bigint not null
+		constraint upep_blast_db_upep_codon_id_fk
+			references upep.upep_codon
+				on update cascade on delete cascade,
+	ending_codon_id bigint not null
+		constraint upep_blast_db_upep_codon_id_fk_2
+			references upep.upep_codon
+				on update cascade on delete cascade
 )
 ;
 
-create table upep.upep_codon
+
+create table if not exists upep.upep_codon
 (
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone,
 	starting_codon boolean default false not null,
 	ending_codon boolean default false not null,
 	sequence char(3) not null,
-	id bigint not null
+	id bigserial not null
 		constraint upep_codon_id_pk
 			primary key
 )
 ;
 
-create table upep.upep_sorf_position
+create unique index if not exists upep_codon_sequence_uindex
+	on upep.upep_codon (sequence)
+;
+
+create table if not exists upep.upep_sorf_positions
 (
-	id bigint not null
+	id bigserial not null
 		constraint upep_sorf_pos_pkey
 			primary key,
 	created_at timestamp with time zone,
@@ -139,22 +173,18 @@ create table upep.upep_sorf_position
 	ending_position integer not null,
 	ref_seq_entry_id bigint not null
 		constraint upep_sorf_pos_upep_ref_seq_entries_id_fk
-			references upep.upep_ref_seq_entries,
+			references upep.upep_ref_seq_entries
+				on update cascade on delete cascade,
 	starting_codon_id bigint not null
 		constraint upep_sorf_pos_upep_codon_id_fk
-			references upep.upep_codon,
+			references upep.upep_codon
+				on update cascade on delete cascade,
 	ending_codon_id bigint not null
 		constraint upep_sorf_pos_upep_codon_id_fk_2
 			references upep.upep_codon
+				on update cascade on delete cascade
 )
 ;
-
-create unique index upep_codon_sequence_uindex
-	on upep.upep_codon (sequence)
-;
-
-
-
 
 -- +migrate Down
 drop schema upep cascade ;

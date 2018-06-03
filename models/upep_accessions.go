@@ -22,29 +22,33 @@ import (
 
 // UpepAccession is an object representing the database table.
 type UpepAccession struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	Accession string    `boil:"accession" json:"accession" toml:"accession" yaml:"accession"`
+	ID             int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt      null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt      null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	Accession      string    `boil:"accession" json:"accession" toml:"accession" yaml:"accession"`
+	UpepRefSeqDBID int64     `boil:"upep_ref_seq_db_id" json:"upep_ref_seq_db_id" toml:"upep_ref_seq_db_id" yaml:"upep_ref_seq_db_id"`
 
 	R *upepAccessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L upepAccessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UpepAccessionColumns = struct {
-	ID        string
-	CreatedAt string
-	UpdatedAt string
-	Accession string
+	ID             string
+	CreatedAt      string
+	UpdatedAt      string
+	Accession      string
+	UpepRefSeqDBID string
 }{
-	ID:        "id",
-	CreatedAt: "created_at",
-	UpdatedAt: "updated_at",
-	Accession: "accession",
+	ID:             "id",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	Accession:      "accession",
+	UpepRefSeqDBID: "upep_ref_seq_db_id",
 }
 
 // upepAccessionR is where relationships are stored.
 type upepAccessionR struct {
+	UpepRefSeqDB               *UpepRefSeqDB
 	AccessionUpepRefSeqEntries UpepRefSeqEntrySlice
 }
 
@@ -52,8 +56,8 @@ type upepAccessionR struct {
 type upepAccessionL struct{}
 
 var (
-	upepAccessionColumns               = []string{"id", "created_at", "updated_at", "accession"}
-	upepAccessionColumnsWithoutDefault = []string{"created_at", "updated_at", "accession"}
+	upepAccessionColumns               = []string{"id", "created_at", "updated_at", "accession", "upep_ref_seq_db_id"}
+	upepAccessionColumnsWithoutDefault = []string{"created_at", "updated_at", "accession", "upep_ref_seq_db_id"}
 	upepAccessionColumnsWithDefault    = []string{"id"}
 	upepAccessionPrimaryKeyColumns     = []string{"id"}
 )
@@ -334,6 +338,25 @@ func (q upepAccessionQuery) Exists() (bool, error) {
 	return count > 0, nil
 }
 
+// UpepRefSeqDBG pointed to by the foreign key.
+func (o *UpepAccession) UpepRefSeqDBG(mods ...qm.QueryMod) upepRefSeqDBQuery {
+	return o.UpepRefSeqDB(boil.GetDB(), mods...)
+}
+
+// UpepRefSeqDB pointed to by the foreign key.
+func (o *UpepAccession) UpepRefSeqDB(exec boil.Executor, mods ...qm.QueryMod) upepRefSeqDBQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("id=?", o.UpepRefSeqDBID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := UpepRefSeqDBS(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_ref_seq_db\"")
+
+	return query
+}
+
 // AccessionUpepRefSeqEntriesG retrieves all the upep_ref_seq_entry's upep ref seq entries via accession_id column.
 func (o *UpepAccession) AccessionUpepRefSeqEntriesG(mods ...qm.QueryMod) upepRefSeqEntryQuery {
 	return o.AccessionUpepRefSeqEntries(boil.GetDB(), mods...)
@@ -358,6 +381,84 @@ func (o *UpepAccession) AccessionUpepRefSeqEntries(exec boil.Executor, mods ...q
 	}
 
 	return query
+}
+
+// LoadUpepRefSeqDB allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepAccessionL) LoadUpepRefSeqDB(e boil.Executor, singular bool, maybeUpepAccession interface{}) error {
+	var slice []*UpepAccession
+	var object *UpepAccession
+
+	count := 1
+	if singular {
+		object = maybeUpepAccession.(*UpepAccession)
+	} else {
+		slice = *maybeUpepAccession.(*[]*UpepAccession)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepAccessionR{}
+		}
+		args[0] = object.UpepRefSeqDBID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepAccessionR{}
+			}
+			args[i] = obj.UpepRefSeqDBID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_ref_seq_db\" where \"id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load UpepRefSeqDB")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepRefSeqDB
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice UpepRefSeqDB")
+	}
+
+	if len(upepAccessionAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		object.R.UpepRefSeqDB = resultSlice[0]
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.UpepRefSeqDBID == foreign.ID {
+				local.R.UpepRefSeqDB = foreign
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadAccessionUpepRefSeqEntries allows an eager lookup of values, cached into the
@@ -427,6 +528,82 @@ func (upepAccessionL) LoadAccessionUpepRefSeqEntries(e boil.Executor, singular b
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetUpepRefSeqDBG of the upep_accession to the related item.
+// Sets o.R.UpepRefSeqDB to related.
+// Adds o to related.R.UpepAccessions.
+// Uses the global database handle.
+func (o *UpepAccession) SetUpepRefSeqDBG(insert bool, related *UpepRefSeqDB) error {
+	return o.SetUpepRefSeqDB(boil.GetDB(), insert, related)
+}
+
+// SetUpepRefSeqDBP of the upep_accession to the related item.
+// Sets o.R.UpepRefSeqDB to related.
+// Adds o to related.R.UpepAccessions.
+// Panics on error.
+func (o *UpepAccession) SetUpepRefSeqDBP(exec boil.Executor, insert bool, related *UpepRefSeqDB) {
+	if err := o.SetUpepRefSeqDB(exec, insert, related); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetUpepRefSeqDBGP of the upep_accession to the related item.
+// Sets o.R.UpepRefSeqDB to related.
+// Adds o to related.R.UpepAccessions.
+// Uses the global database handle and panics on error.
+func (o *UpepAccession) SetUpepRefSeqDBGP(insert bool, related *UpepRefSeqDB) {
+	if err := o.SetUpepRefSeqDB(boil.GetDB(), insert, related); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetUpepRefSeqDB of the upep_accession to the related item.
+// Sets o.R.UpepRefSeqDB to related.
+// Adds o to related.R.UpepAccessions.
+func (o *UpepAccession) SetUpepRefSeqDB(exec boil.Executor, insert bool, related *UpepRefSeqDB) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"upep\".\"upep_accessions\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"upep_ref_seq_db_id"}),
+		strmangle.WhereClause("\"", "\"", 2, upepAccessionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.UpepRefSeqDBID = related.ID
+
+	if o.R == nil {
+		o.R = &upepAccessionR{
+			UpepRefSeqDB: related,
+		}
+	} else {
+		o.R.UpepRefSeqDB = related
+	}
+
+	if related.R == nil {
+		related.R = &upepRefSeqDBR{
+			UpepAccessions: UpepAccessionSlice{o},
+		}
+	} else {
+		related.R.UpepAccessions = append(related.R.UpepAccessions, o)
 	}
 
 	return nil

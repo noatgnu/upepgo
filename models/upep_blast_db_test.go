@@ -462,6 +462,324 @@ func testUpepBlastDBSInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testUpepBlastDBToOneUpepRefSeqDBUsingUpepRefSeqDB(t *testing.T) {
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var local UpepBlastDB
+	var foreign UpepRefSeqDB
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepBlastDB struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, upepRefSeqDBDBTypes, false, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := foreign.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	local.UpepRefSeqDBID = foreign.ID
+	if err := local.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.UpepRefSeqDB(tx).One()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	slice := UpepBlastDBSlice{&local}
+	if err = local.L.LoadUpepRefSeqDB(tx, false, (*[]*UpepBlastDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.UpepRefSeqDB == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.UpepRefSeqDB = nil
+	if err = local.L.LoadUpepRefSeqDB(tx, true, &local); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.UpepRefSeqDB == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testUpepBlastDBToOneUpepCodonUsingStartingCodon(t *testing.T) {
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var local UpepBlastDB
+	var foreign UpepCodon
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepBlastDB struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, upepCodonDBTypes, false, upepCodonColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepCodon struct: %s", err)
+	}
+
+	if err := foreign.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	local.StartingCodonID = foreign.ID
+	if err := local.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.StartingCodon(tx).One()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	slice := UpepBlastDBSlice{&local}
+	if err = local.L.LoadStartingCodon(tx, false, (*[]*UpepBlastDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.StartingCodon == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.StartingCodon = nil
+	if err = local.L.LoadStartingCodon(tx, true, &local); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.StartingCodon == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testUpepBlastDBToOneUpepCodonUsingEndingCodon(t *testing.T) {
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var local UpepBlastDB
+	var foreign UpepCodon
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepBlastDB struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, upepCodonDBTypes, false, upepCodonColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepCodon struct: %s", err)
+	}
+
+	if err := foreign.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	local.EndingCodonID = foreign.ID
+	if err := local.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.EndingCodon(tx).One()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	slice := UpepBlastDBSlice{&local}
+	if err = local.L.LoadEndingCodon(tx, false, (*[]*UpepBlastDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.EndingCodon == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.EndingCodon = nil
+	if err = local.L.LoadEndingCodon(tx, true, &local); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.EndingCodon == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testUpepBlastDBToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepBlastDB
+	var b, c UpepRefSeqDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*UpepRefSeqDB{&b, &c} {
+		err = a.SetUpepRefSeqDB(tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.UpepRefSeqDB != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.UpepBlastDBS[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.UpepRefSeqDBID != x.ID {
+			t.Error("foreign key was wrong value", a.UpepRefSeqDBID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.UpepRefSeqDBID))
+		reflect.Indirect(reflect.ValueOf(&a.UpepRefSeqDBID)).Set(zero)
+
+		if err = a.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.UpepRefSeqDBID != x.ID {
+			t.Error("foreign key was wrong value", a.UpepRefSeqDBID, x.ID)
+		}
+	}
+}
+func testUpepBlastDBToOneSetOpUpepCodonUsingStartingCodon(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepBlastDB
+	var b, c UpepCodon
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*UpepCodon{&b, &c} {
+		err = a.SetStartingCodon(tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.StartingCodon != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.StartingCodonUpepBlastDBS[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.StartingCodonID != x.ID {
+			t.Error("foreign key was wrong value", a.StartingCodonID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.StartingCodonID))
+		reflect.Indirect(reflect.ValueOf(&a.StartingCodonID)).Set(zero)
+
+		if err = a.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.StartingCodonID != x.ID {
+			t.Error("foreign key was wrong value", a.StartingCodonID, x.ID)
+		}
+	}
+}
+func testUpepBlastDBToOneSetOpUpepCodonUsingEndingCodon(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepBlastDB
+	var b, c UpepCodon
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*UpepCodon{&b, &c} {
+		err = a.SetEndingCodon(tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.EndingCodon != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.EndingCodonUpepBlastDBS[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.EndingCodonID != x.ID {
+			t.Error("foreign key was wrong value", a.EndingCodonID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.EndingCodonID))
+		reflect.Indirect(reflect.ValueOf(&a.EndingCodonID)).Set(zero)
+
+		if err = a.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.EndingCodonID != x.ID {
+			t.Error("foreign key was wrong value", a.EndingCodonID, x.ID)
+		}
+	}
+}
 func testUpepBlastDBSReload(t *testing.T) {
 	t.Parallel()
 
@@ -532,7 +850,7 @@ func testUpepBlastDBSSelect(t *testing.T) {
 }
 
 var (
-	upepBlastDBDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `Description`: `text`, `ID`: `bigint`, `Path`: `text`, `Title`: `text`, `UpdatedAt`: `timestamp with time zone`}
+	upepBlastDBDBTypes = map[string]string{`CreatedAt`: `timestamp with time zone`, `Description`: `text`, `EndingCodonID`: `bigint`, `ID`: `bigint`, `Path`: `text`, `StartingCodonID`: `bigint`, `Title`: `text`, `UpdatedAt`: `timestamp with time zone`, `UpepRefSeqDBID`: `bigint`}
 	_                  = bytes.MinRead
 )
 

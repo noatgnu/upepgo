@@ -22,11 +22,11 @@ import (
 
 // UpepRefSeqDB is an object representing the database table.
 type UpepRefSeqDB struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Version   int       `boil:"version" json:"version" toml:"version" yaml:"version"`
+	ID        int64     `boil:"id" json:"ID" toml:"id" yaml:"id"`
+	CreatedAt null.Time `boil:"created_at" json:"CreatedAt,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt null.Time `boil:"updated_at" json:"UpdatedAt,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	Name      string    `boil:"name" json:"Name" toml:"name" yaml:"name"`
+	Version   int       `boil:"version" json:"Version" toml:"version" yaml:"version"`
 
 	R *upepRefSeqDBR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L upepRefSeqDBL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -48,6 +48,10 @@ var UpepRefSeqDBColumns = struct {
 
 // upepRefSeqDBR is where relationships are stored.
 type upepRefSeqDBR struct {
+	UpepAccessions            UpepAccessionSlice
+	UpepBlastDBS              UpepBlastDBSlice
+	UpepGeneIdentifiers       UpepGeneIdentifierSlice
+	UpepOrganisms             UpepOrganismSlice
 	RefSeqDBUpepRefSeqEntries UpepRefSeqEntrySlice
 }
 
@@ -337,6 +341,110 @@ func (q upepRefSeqDBQuery) Exists() (bool, error) {
 	return count > 0, nil
 }
 
+// UpepAccessionsG retrieves all the upep_accession's upep accessions.
+func (o *UpepRefSeqDB) UpepAccessionsG(mods ...qm.QueryMod) upepAccessionQuery {
+	return o.UpepAccessions(boil.GetDB(), mods...)
+}
+
+// UpepAccessions retrieves all the upep_accession's upep accessions with an executor.
+func (o *UpepRefSeqDB) UpepAccessions(exec boil.Executor, mods ...qm.QueryMod) upepAccessionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_accessions\".\"upep_ref_seq_db_id\"=?", o.ID),
+	)
+
+	query := UpepAccessions(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_accessions\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_accessions\".*"})
+	}
+
+	return query
+}
+
+// UpepBlastDBSG retrieves all the upep_blast_db's upep blast db.
+func (o *UpepRefSeqDB) UpepBlastDBSG(mods ...qm.QueryMod) upepBlastDBQuery {
+	return o.UpepBlastDBS(boil.GetDB(), mods...)
+}
+
+// UpepBlastDBS retrieves all the upep_blast_db's upep blast db with an executor.
+func (o *UpepRefSeqDB) UpepBlastDBS(exec boil.Executor, mods ...qm.QueryMod) upepBlastDBQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_blast_db\".\"upep_ref_seq_db_id\"=?", o.ID),
+	)
+
+	query := UpepBlastDBS(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_blast_db\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_blast_db\".*"})
+	}
+
+	return query
+}
+
+// UpepGeneIdentifiersG retrieves all the upep_gene_identifier's upep gene identifiers.
+func (o *UpepRefSeqDB) UpepGeneIdentifiersG(mods ...qm.QueryMod) upepGeneIdentifierQuery {
+	return o.UpepGeneIdentifiers(boil.GetDB(), mods...)
+}
+
+// UpepGeneIdentifiers retrieves all the upep_gene_identifier's upep gene identifiers with an executor.
+func (o *UpepRefSeqDB) UpepGeneIdentifiers(exec boil.Executor, mods ...qm.QueryMod) upepGeneIdentifierQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_gene_identifiers\".\"upep_ref_seq_db_id\"=?", o.ID),
+	)
+
+	query := UpepGeneIdentifiers(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_gene_identifiers\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_gene_identifiers\".*"})
+	}
+
+	return query
+}
+
+// UpepOrganismsG retrieves all the upep_organism's upep organisms.
+func (o *UpepRefSeqDB) UpepOrganismsG(mods ...qm.QueryMod) upepOrganismQuery {
+	return o.UpepOrganisms(boil.GetDB(), mods...)
+}
+
+// UpepOrganisms retrieves all the upep_organism's upep organisms with an executor.
+func (o *UpepRefSeqDB) UpepOrganisms(exec boil.Executor, mods ...qm.QueryMod) upepOrganismQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_organisms\".\"upep_ref_seq_db_id\"=?", o.ID),
+	)
+
+	query := UpepOrganisms(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_organisms\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_organisms\".*"})
+	}
+
+	return query
+}
+
 // RefSeqDBUpepRefSeqEntriesG retrieves all the upep_ref_seq_entry's upep ref seq entries via ref_seq_db_id column.
 func (o *UpepRefSeqDB) RefSeqDBUpepRefSeqEntriesG(mods ...qm.QueryMod) upepRefSeqEntryQuery {
 	return o.RefSeqDBUpepRefSeqEntries(boil.GetDB(), mods...)
@@ -361,6 +469,294 @@ func (o *UpepRefSeqDB) RefSeqDBUpepRefSeqEntries(exec boil.Executor, mods ...qm.
 	}
 
 	return query
+}
+
+// LoadUpepAccessions allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepRefSeqDBL) LoadUpepAccessions(e boil.Executor, singular bool, maybeUpepRefSeqDB interface{}) error {
+	var slice []*UpepRefSeqDB
+	var object *UpepRefSeqDB
+
+	count := 1
+	if singular {
+		object = maybeUpepRefSeqDB.(*UpepRefSeqDB)
+	} else {
+		slice = *maybeUpepRefSeqDB.(*[]*UpepRefSeqDB)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepRefSeqDBR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepRefSeqDBR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_accessions\" where \"upep_ref_seq_db_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_accessions")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepAccession
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_accessions")
+	}
+
+	if len(upepAccessionAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.UpepAccessions = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UpepRefSeqDBID {
+				local.R.UpepAccessions = append(local.R.UpepAccessions, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadUpepBlastDBS allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepRefSeqDBL) LoadUpepBlastDBS(e boil.Executor, singular bool, maybeUpepRefSeqDB interface{}) error {
+	var slice []*UpepRefSeqDB
+	var object *UpepRefSeqDB
+
+	count := 1
+	if singular {
+		object = maybeUpepRefSeqDB.(*UpepRefSeqDB)
+	} else {
+		slice = *maybeUpepRefSeqDB.(*[]*UpepRefSeqDB)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepRefSeqDBR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepRefSeqDBR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_blast_db\" where \"upep_ref_seq_db_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_blast_db")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepBlastDB
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_blast_db")
+	}
+
+	if len(upepBlastDBAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.UpepBlastDBS = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UpepRefSeqDBID {
+				local.R.UpepBlastDBS = append(local.R.UpepBlastDBS, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadUpepGeneIdentifiers allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepRefSeqDBL) LoadUpepGeneIdentifiers(e boil.Executor, singular bool, maybeUpepRefSeqDB interface{}) error {
+	var slice []*UpepRefSeqDB
+	var object *UpepRefSeqDB
+
+	count := 1
+	if singular {
+		object = maybeUpepRefSeqDB.(*UpepRefSeqDB)
+	} else {
+		slice = *maybeUpepRefSeqDB.(*[]*UpepRefSeqDB)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepRefSeqDBR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepRefSeqDBR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_gene_identifiers\" where \"upep_ref_seq_db_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_gene_identifiers")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepGeneIdentifier
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_gene_identifiers")
+	}
+
+	if len(upepGeneIdentifierAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.UpepGeneIdentifiers = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UpepRefSeqDBID {
+				local.R.UpepGeneIdentifiers = append(local.R.UpepGeneIdentifiers, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadUpepOrganisms allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepRefSeqDBL) LoadUpepOrganisms(e boil.Executor, singular bool, maybeUpepRefSeqDB interface{}) error {
+	var slice []*UpepRefSeqDB
+	var object *UpepRefSeqDB
+
+	count := 1
+	if singular {
+		object = maybeUpepRefSeqDB.(*UpepRefSeqDB)
+	} else {
+		slice = *maybeUpepRefSeqDB.(*[]*UpepRefSeqDB)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepRefSeqDBR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepRefSeqDBR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_organisms\" where \"upep_ref_seq_db_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_organisms")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepOrganism
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_organisms")
+	}
+
+	if len(upepOrganismAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.UpepOrganisms = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UpepRefSeqDBID {
+				local.R.UpepOrganisms = append(local.R.UpepOrganisms, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadRefSeqDBUpepRefSeqEntries allows an eager lookup of values, cached into the
@@ -432,6 +828,342 @@ func (upepRefSeqDBL) LoadRefSeqDBUpepRefSeqEntries(e boil.Executor, singular boo
 		}
 	}
 
+	return nil
+}
+
+// AddUpepAccessionsG adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepAccessions.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle.
+func (o *UpepRefSeqDB) AddUpepAccessionsG(insert bool, related ...*UpepAccession) error {
+	return o.AddUpepAccessions(boil.GetDB(), insert, related...)
+}
+
+// AddUpepAccessionsP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepAccessions.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Panics on error.
+func (o *UpepRefSeqDB) AddUpepAccessionsP(exec boil.Executor, insert bool, related ...*UpepAccession) {
+	if err := o.AddUpepAccessions(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepAccessionsGP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepAccessions.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepRefSeqDB) AddUpepAccessionsGP(insert bool, related ...*UpepAccession) {
+	if err := o.AddUpepAccessions(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepAccessions adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepAccessions.
+// Sets related.R.UpepRefSeqDB appropriately.
+func (o *UpepRefSeqDB) AddUpepAccessions(exec boil.Executor, insert bool, related ...*UpepAccession) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UpepRefSeqDBID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_accessions\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"upep_ref_seq_db_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepAccessionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UpepRefSeqDBID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepRefSeqDBR{
+			UpepAccessions: related,
+		}
+	} else {
+		o.R.UpepAccessions = append(o.R.UpepAccessions, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepAccessionR{
+				UpepRefSeqDB: o,
+			}
+		} else {
+			rel.R.UpepRefSeqDB = o
+		}
+	}
+	return nil
+}
+
+// AddUpepBlastDBSG adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepBlastDBS.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle.
+func (o *UpepRefSeqDB) AddUpepBlastDBSG(insert bool, related ...*UpepBlastDB) error {
+	return o.AddUpepBlastDBS(boil.GetDB(), insert, related...)
+}
+
+// AddUpepBlastDBSP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepBlastDBS.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Panics on error.
+func (o *UpepRefSeqDB) AddUpepBlastDBSP(exec boil.Executor, insert bool, related ...*UpepBlastDB) {
+	if err := o.AddUpepBlastDBS(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepBlastDBSGP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepBlastDBS.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepRefSeqDB) AddUpepBlastDBSGP(insert bool, related ...*UpepBlastDB) {
+	if err := o.AddUpepBlastDBS(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepBlastDBS adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepBlastDBS.
+// Sets related.R.UpepRefSeqDB appropriately.
+func (o *UpepRefSeqDB) AddUpepBlastDBS(exec boil.Executor, insert bool, related ...*UpepBlastDB) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UpepRefSeqDBID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_blast_db\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"upep_ref_seq_db_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepBlastDBPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UpepRefSeqDBID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepRefSeqDBR{
+			UpepBlastDBS: related,
+		}
+	} else {
+		o.R.UpepBlastDBS = append(o.R.UpepBlastDBS, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepBlastDBR{
+				UpepRefSeqDB: o,
+			}
+		} else {
+			rel.R.UpepRefSeqDB = o
+		}
+	}
+	return nil
+}
+
+// AddUpepGeneIdentifiersG adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepGeneIdentifiers.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle.
+func (o *UpepRefSeqDB) AddUpepGeneIdentifiersG(insert bool, related ...*UpepGeneIdentifier) error {
+	return o.AddUpepGeneIdentifiers(boil.GetDB(), insert, related...)
+}
+
+// AddUpepGeneIdentifiersP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepGeneIdentifiers.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Panics on error.
+func (o *UpepRefSeqDB) AddUpepGeneIdentifiersP(exec boil.Executor, insert bool, related ...*UpepGeneIdentifier) {
+	if err := o.AddUpepGeneIdentifiers(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepGeneIdentifiersGP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepGeneIdentifiers.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepRefSeqDB) AddUpepGeneIdentifiersGP(insert bool, related ...*UpepGeneIdentifier) {
+	if err := o.AddUpepGeneIdentifiers(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepGeneIdentifiers adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepGeneIdentifiers.
+// Sets related.R.UpepRefSeqDB appropriately.
+func (o *UpepRefSeqDB) AddUpepGeneIdentifiers(exec boil.Executor, insert bool, related ...*UpepGeneIdentifier) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UpepRefSeqDBID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_gene_identifiers\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"upep_ref_seq_db_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepGeneIdentifierPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UpepRefSeqDBID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepRefSeqDBR{
+			UpepGeneIdentifiers: related,
+		}
+	} else {
+		o.R.UpepGeneIdentifiers = append(o.R.UpepGeneIdentifiers, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepGeneIdentifierR{
+				UpepRefSeqDB: o,
+			}
+		} else {
+			rel.R.UpepRefSeqDB = o
+		}
+	}
+	return nil
+}
+
+// AddUpepOrganismsG adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepOrganisms.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle.
+func (o *UpepRefSeqDB) AddUpepOrganismsG(insert bool, related ...*UpepOrganism) error {
+	return o.AddUpepOrganisms(boil.GetDB(), insert, related...)
+}
+
+// AddUpepOrganismsP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepOrganisms.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Panics on error.
+func (o *UpepRefSeqDB) AddUpepOrganismsP(exec boil.Executor, insert bool, related ...*UpepOrganism) {
+	if err := o.AddUpepOrganisms(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepOrganismsGP adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepOrganisms.
+// Sets related.R.UpepRefSeqDB appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepRefSeqDB) AddUpepOrganismsGP(insert bool, related ...*UpepOrganism) {
+	if err := o.AddUpepOrganisms(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddUpepOrganisms adds the given related objects to the existing relationships
+// of the upep_ref_seq_db, optionally inserting them as new records.
+// Appends related to o.R.UpepOrganisms.
+// Sets related.R.UpepRefSeqDB appropriately.
+func (o *UpepRefSeqDB) AddUpepOrganisms(exec boil.Executor, insert bool, related ...*UpepOrganism) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UpepRefSeqDBID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_organisms\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"upep_ref_seq_db_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepOrganismPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UpepRefSeqDBID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepRefSeqDBR{
+			UpepOrganisms: related,
+		}
+	} else {
+		o.R.UpepOrganisms = append(o.R.UpepOrganisms, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepOrganismR{
+				UpepRefSeqDB: o,
+			}
+		} else {
+			rel.R.UpepRefSeqDB = o
+		}
+	}
 	return nil
 }
 

@@ -19,5 +19,9 @@
 *.db-journal
 *.gz
 temp/RELEASE_NUMBER
+temp/*
 sqlboiler.toml
 dbconfig.yml
+settings.json
+blastdb/*
+settings.json

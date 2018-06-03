@@ -31,8 +31,8 @@ type UpepSorfPosition struct {
 	StartingCodonID  int64     `boil:"starting_codon_id" json:"starting_codon_id" toml:"starting_codon_id" yaml:"starting_codon_id"`
 	EndingCodonID    int64     `boil:"ending_codon_id" json:"ending_codon_id" toml:"ending_codon_id" yaml:"ending_codon_id"`
 
-	R *upepSorfPositionR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L upepSorfPositionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *upepSorfPositionR `boil:"-" json:"R" toml:"-" yaml:"-"`
+	L upepSorfPositionL  `boil:"-" json:"L" toml:"-" yaml:"-"`
 }
 
 var UpepSorfPositionColumns = struct {

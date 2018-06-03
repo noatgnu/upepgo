@@ -51,6 +51,8 @@ var UpepCodonColumns = struct {
 
 // upepCodonR is where relationships are stored.
 type upepCodonR struct {
+	StartingCodonUpepBlastDBS      UpepBlastDBSlice
+	EndingCodonUpepBlastDBS        UpepBlastDBSlice
 	StartingCodonUpepSorfPositions UpepSorfPositionSlice
 	EndingCodonUpepSorfPositions   UpepSorfPositionSlice
 }
@@ -341,6 +343,58 @@ func (q upepCodonQuery) Exists() (bool, error) {
 	return count > 0, nil
 }
 
+// StartingCodonUpepBlastDBSG retrieves all the upep_blast_db's upep blast db via starting_codon_id column.
+func (o *UpepCodon) StartingCodonUpepBlastDBSG(mods ...qm.QueryMod) upepBlastDBQuery {
+	return o.StartingCodonUpepBlastDBS(boil.GetDB(), mods...)
+}
+
+// StartingCodonUpepBlastDBS retrieves all the upep_blast_db's upep blast db with an executor via starting_codon_id column.
+func (o *UpepCodon) StartingCodonUpepBlastDBS(exec boil.Executor, mods ...qm.QueryMod) upepBlastDBQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_blast_db\".\"starting_codon_id\"=?", o.ID),
+	)
+
+	query := UpepBlastDBS(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_blast_db\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_blast_db\".*"})
+	}
+
+	return query
+}
+
+// EndingCodonUpepBlastDBSG retrieves all the upep_blast_db's upep blast db via ending_codon_id column.
+func (o *UpepCodon) EndingCodonUpepBlastDBSG(mods ...qm.QueryMod) upepBlastDBQuery {
+	return o.EndingCodonUpepBlastDBS(boil.GetDB(), mods...)
+}
+
+// EndingCodonUpepBlastDBS retrieves all the upep_blast_db's upep blast db with an executor via ending_codon_id column.
+func (o *UpepCodon) EndingCodonUpepBlastDBS(exec boil.Executor, mods ...qm.QueryMod) upepBlastDBQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"upep\".\"upep_blast_db\".\"ending_codon_id\"=?", o.ID),
+	)
+
+	query := UpepBlastDBS(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"upep\".\"upep_blast_db\"")
+
+	if len(queries.GetSelect(query.Query)) == 0 {
+		queries.SetSelect(query.Query, []string{"\"upep\".\"upep_blast_db\".*"})
+	}
+
+	return query
+}
+
 // StartingCodonUpepSorfPositionsG retrieves all the upep_sorf_position's upep sorf positions via starting_codon_id column.
 func (o *UpepCodon) StartingCodonUpepSorfPositionsG(mods ...qm.QueryMod) upepSorfPositionQuery {
 	return o.StartingCodonUpepSorfPositions(boil.GetDB(), mods...)
@@ -391,6 +445,150 @@ func (o *UpepCodon) EndingCodonUpepSorfPositions(exec boil.Executor, mods ...qm.
 	}
 
 	return query
+}
+
+// LoadStartingCodonUpepBlastDBS allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepCodonL) LoadStartingCodonUpepBlastDBS(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
+	var slice []*UpepCodon
+	var object *UpepCodon
+
+	count := 1
+	if singular {
+		object = maybeUpepCodon.(*UpepCodon)
+	} else {
+		slice = *maybeUpepCodon.(*[]*UpepCodon)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepCodonR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepCodonR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_blast_db\" where \"starting_codon_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_blast_db")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepBlastDB
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_blast_db")
+	}
+
+	if len(upepBlastDBAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.StartingCodonUpepBlastDBS = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.StartingCodonID {
+				local.R.StartingCodonUpepBlastDBS = append(local.R.StartingCodonUpepBlastDBS, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadEndingCodonUpepBlastDBS allows an eager lookup of values, cached into the
+// loaded structs of the objects.
+func (upepCodonL) LoadEndingCodonUpepBlastDBS(e boil.Executor, singular bool, maybeUpepCodon interface{}) error {
+	var slice []*UpepCodon
+	var object *UpepCodon
+
+	count := 1
+	if singular {
+		object = maybeUpepCodon.(*UpepCodon)
+	} else {
+		slice = *maybeUpepCodon.(*[]*UpepCodon)
+		count = len(slice)
+	}
+
+	args := make([]interface{}, count)
+	if singular {
+		if object.R == nil {
+			object.R = &upepCodonR{}
+		}
+		args[0] = object.ID
+	} else {
+		for i, obj := range slice {
+			if obj.R == nil {
+				obj.R = &upepCodonR{}
+			}
+			args[i] = obj.ID
+		}
+	}
+
+	query := fmt.Sprintf(
+		"select * from \"upep\".\"upep_blast_db\" where \"ending_codon_id\" in (%s)",
+		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	)
+	if boil.DebugMode {
+		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	}
+
+	results, err := e.Query(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load upep_blast_db")
+	}
+	defer results.Close()
+
+	var resultSlice []*UpepBlastDB
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice upep_blast_db")
+	}
+
+	if len(upepBlastDBAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.EndingCodonUpepBlastDBS = resultSlice
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.EndingCodonID {
+				local.R.EndingCodonUpepBlastDBS = append(local.R.EndingCodonUpepBlastDBS, foreign)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadStartingCodonUpepSorfPositions allows an eager lookup of values, cached into the
@@ -534,6 +732,174 @@ func (upepCodonL) LoadEndingCodonUpepSorfPositions(e boil.Executor, singular boo
 		}
 	}
 
+	return nil
+}
+
+// AddStartingCodonUpepBlastDBSG adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.StartingCodonUpepBlastDBS.
+// Sets related.R.StartingCodon appropriately.
+// Uses the global database handle.
+func (o *UpepCodon) AddStartingCodonUpepBlastDBSG(insert bool, related ...*UpepBlastDB) error {
+	return o.AddStartingCodonUpepBlastDBS(boil.GetDB(), insert, related...)
+}
+
+// AddStartingCodonUpepBlastDBSP adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.StartingCodonUpepBlastDBS.
+// Sets related.R.StartingCodon appropriately.
+// Panics on error.
+func (o *UpepCodon) AddStartingCodonUpepBlastDBSP(exec boil.Executor, insert bool, related ...*UpepBlastDB) {
+	if err := o.AddStartingCodonUpepBlastDBS(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddStartingCodonUpepBlastDBSGP adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.StartingCodonUpepBlastDBS.
+// Sets related.R.StartingCodon appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepCodon) AddStartingCodonUpepBlastDBSGP(insert bool, related ...*UpepBlastDB) {
+	if err := o.AddStartingCodonUpepBlastDBS(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddStartingCodonUpepBlastDBS adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.StartingCodonUpepBlastDBS.
+// Sets related.R.StartingCodon appropriately.
+func (o *UpepCodon) AddStartingCodonUpepBlastDBS(exec boil.Executor, insert bool, related ...*UpepBlastDB) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.StartingCodonID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_blast_db\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"starting_codon_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepBlastDBPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.StartingCodonID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepCodonR{
+			StartingCodonUpepBlastDBS: related,
+		}
+	} else {
+		o.R.StartingCodonUpepBlastDBS = append(o.R.StartingCodonUpepBlastDBS, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepBlastDBR{
+				StartingCodon: o,
+			}
+		} else {
+			rel.R.StartingCodon = o
+		}
+	}
+	return nil
+}
+
+// AddEndingCodonUpepBlastDBSG adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.EndingCodonUpepBlastDBS.
+// Sets related.R.EndingCodon appropriately.
+// Uses the global database handle.
+func (o *UpepCodon) AddEndingCodonUpepBlastDBSG(insert bool, related ...*UpepBlastDB) error {
+	return o.AddEndingCodonUpepBlastDBS(boil.GetDB(), insert, related...)
+}
+
+// AddEndingCodonUpepBlastDBSP adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.EndingCodonUpepBlastDBS.
+// Sets related.R.EndingCodon appropriately.
+// Panics on error.
+func (o *UpepCodon) AddEndingCodonUpepBlastDBSP(exec boil.Executor, insert bool, related ...*UpepBlastDB) {
+	if err := o.AddEndingCodonUpepBlastDBS(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddEndingCodonUpepBlastDBSGP adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.EndingCodonUpepBlastDBS.
+// Sets related.R.EndingCodon appropriately.
+// Uses the global database handle and panics on error.
+func (o *UpepCodon) AddEndingCodonUpepBlastDBSGP(insert bool, related ...*UpepBlastDB) {
+	if err := o.AddEndingCodonUpepBlastDBS(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// AddEndingCodonUpepBlastDBS adds the given related objects to the existing relationships
+// of the upep_codon, optionally inserting them as new records.
+// Appends related to o.R.EndingCodonUpepBlastDBS.
+// Sets related.R.EndingCodon appropriately.
+func (o *UpepCodon) AddEndingCodonUpepBlastDBS(exec boil.Executor, insert bool, related ...*UpepBlastDB) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.EndingCodonID = o.ID
+			if err = rel.Insert(exec); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"upep\".\"upep_blast_db\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"ending_codon_id"}),
+				strmangle.WhereClause("\"", "\"", 2, upepBlastDBPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.EndingCodonID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &upepCodonR{
+			EndingCodonUpepBlastDBS: related,
+		}
+	} else {
+		o.R.EndingCodonUpepBlastDBS = append(o.R.EndingCodonUpepBlastDBS, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &upepBlastDBR{
+				EndingCodon: o,
+			}
+		} else {
+			rel.R.EndingCodon = o
+		}
+	}
 	return nil
 }
 

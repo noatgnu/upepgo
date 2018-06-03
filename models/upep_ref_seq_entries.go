@@ -33,8 +33,8 @@ type UpepRefSeqEntry struct {
 	RefSeqDBID      null.Int64  `boil:"ref_seq_db_id" json:"ref_seq_db_id,omitempty" toml:"ref_seq_db_id" yaml:"ref_seq_db_id,omitempty"`
 	RefSeqSequence  string      `boil:"ref_seq_sequence" json:"ref_seq_sequence" toml:"ref_seq_sequence" yaml:"ref_seq_sequence"`
 
-	R *upepRefSeqEntryR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L upepRefSeqEntryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *upepRefSeqEntryR `boil:"-" json:"R" toml:"-" yaml:"-"`
+	L upepRefSeqEntryL  `boil:"-" json:"L" toml:"-" yaml:"-"`
 }
 
 var UpepRefSeqEntryColumns = struct {

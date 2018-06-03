@@ -180,7 +180,11 @@ func TestInsert(t *testing.T) {
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
+	t.Run("UpepAccessionToUpepRefSeqDBUsingUpepRefSeqDB", testUpepAccessionToOneUpepRefSeqDBUsingUpepRefSeqDB)
+	t.Run("UpepBlastDBToUpepRefSeqDBUsingUpepRefSeqDB", testUpepBlastDBToOneUpepRefSeqDBUsingUpepRefSeqDB)
 	t.Run("UpepFeatureToUpepRefSeqEntryUsingRefSeqEntry", testUpepFeatureToOneUpepRefSeqEntryUsingRefSeqEntry)
+	t.Run("UpepGeneIdentifierToUpepRefSeqDBUsingUpepRefSeqDB", testUpepGeneIdentifierToOneUpepRefSeqDBUsingUpepRefSeqDB)
+	t.Run("UpepOrganismToUpepRefSeqDBUsingUpepRefSeqDB", testUpepOrganismToOneUpepRefSeqDBUsingUpepRefSeqDB)
 	t.Run("UpepRefSeqEntryToUpepOrganismUsingOrganism", testUpepRefSeqEntryToOneUpepOrganismUsingOrganism)
 	t.Run("UpepRefSeqEntryToUpepMolecularTypeUsingMolecularType", testUpepRefSeqEntryToOneUpepMolecularTypeUsingMolecularType)
 	t.Run("UpepRefSeqEntryToUpepAccessionUsingAccession", testUpepRefSeqEntryToOneUpepAccessionUsingAccession)
@@ -204,6 +208,10 @@ func TestToMany(t *testing.T) {
 	t.Run("UpepGeneIdentifierToGiUpepRefSeqEntries", testUpepGeneIdentifierToManyGiUpepRefSeqEntries)
 	t.Run("UpepMolecularTypeToMolecularTypeUpepRefSeqEntries", testUpepMolecularTypeToManyMolecularTypeUpepRefSeqEntries)
 	t.Run("UpepOrganismToOrganismUpepRefSeqEntries", testUpepOrganismToManyOrganismUpepRefSeqEntries)
+	t.Run("UpepRefSeqDBToUpepAccessions", testUpepRefSeqDBToManyUpepAccessions)
+	t.Run("UpepRefSeqDBToUpepBlastDBS", testUpepRefSeqDBToManyUpepBlastDBS)
+	t.Run("UpepRefSeqDBToUpepGeneIdentifiers", testUpepRefSeqDBToManyUpepGeneIdentifiers)
+	t.Run("UpepRefSeqDBToUpepOrganisms", testUpepRefSeqDBToManyUpepOrganisms)
 	t.Run("UpepRefSeqDBToRefSeqDBUpepRefSeqEntries", testUpepRefSeqDBToManyRefSeqDBUpepRefSeqEntries)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepFeatures", testUpepRefSeqEntryToManyRefSeqEntryUpepFeatures)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPositions", testUpepRefSeqEntryToManyRefSeqEntryUpepSorfPositions)
@@ -212,7 +220,11 @@ func TestToMany(t *testing.T) {
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
+	t.Run("UpepAccessionToUpepRefSeqDBUsingUpepRefSeqDB", testUpepAccessionToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB)
+	t.Run("UpepBlastDBToUpepRefSeqDBUsingUpepRefSeqDB", testUpepBlastDBToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB)
 	t.Run("UpepFeatureToUpepRefSeqEntryUsingRefSeqEntry", testUpepFeatureToOneSetOpUpepRefSeqEntryUsingRefSeqEntry)
+	t.Run("UpepGeneIdentifierToUpepRefSeqDBUsingUpepRefSeqDB", testUpepGeneIdentifierToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB)
+	t.Run("UpepOrganismToUpepRefSeqDBUsingUpepRefSeqDB", testUpepOrganismToOneSetOpUpepRefSeqDBUsingUpepRefSeqDB)
 	t.Run("UpepRefSeqEntryToUpepOrganismUsingOrganism", testUpepRefSeqEntryToOneSetOpUpepOrganismUsingOrganism)
 	t.Run("UpepRefSeqEntryToUpepMolecularTypeUsingMolecularType", testUpepRefSeqEntryToOneSetOpUpepMolecularTypeUsingMolecularType)
 	t.Run("UpepRefSeqEntryToUpepAccessionUsingAccession", testUpepRefSeqEntryToOneSetOpUpepAccessionUsingAccession)
@@ -250,6 +262,10 @@ func TestToManyAdd(t *testing.T) {
 	t.Run("UpepGeneIdentifierToGiUpepRefSeqEntries", testUpepGeneIdentifierToManyAddOpGiUpepRefSeqEntries)
 	t.Run("UpepMolecularTypeToMolecularTypeUpepRefSeqEntries", testUpepMolecularTypeToManyAddOpMolecularTypeUpepRefSeqEntries)
 	t.Run("UpepOrganismToOrganismUpepRefSeqEntries", testUpepOrganismToManyAddOpOrganismUpepRefSeqEntries)
+	t.Run("UpepRefSeqDBToUpepAccessions", testUpepRefSeqDBToManyAddOpUpepAccessions)
+	t.Run("UpepRefSeqDBToUpepBlastDBS", testUpepRefSeqDBToManyAddOpUpepBlastDBS)
+	t.Run("UpepRefSeqDBToUpepGeneIdentifiers", testUpepRefSeqDBToManyAddOpUpepGeneIdentifiers)
+	t.Run("UpepRefSeqDBToUpepOrganisms", testUpepRefSeqDBToManyAddOpUpepOrganisms)
 	t.Run("UpepRefSeqDBToRefSeqDBUpepRefSeqEntries", testUpepRefSeqDBToManyAddOpRefSeqDBUpepRefSeqEntries)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepFeatures", testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepFeatures)
 	t.Run("UpepRefSeqEntryToRefSeqEntryUpepSorfPositions", testUpepRefSeqEntryToManyAddOpRefSeqEntryUpepSorfPositions)

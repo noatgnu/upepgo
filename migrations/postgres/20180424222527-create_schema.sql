@@ -1,5 +1,5 @@
 
 -- +migrate Up
-CREATE SCHEMA upep;
+CREATE SCHEMA if NOT EXISTS upep;
 -- +migrate Down
 DROP SCHEMA upep CASCADE ;

@@ -462,6 +462,150 @@ func testUpepCodonsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testUpepCodonToManyStartingCodonUpepBlastDBS(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepCodon
+	var b, c UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepCodonDBTypes, true, upepCodonColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepCodon struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+
+	b.StartingCodonID = a.ID
+	c.StartingCodonID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepBlastDB, err := a.StartingCodonUpepBlastDBS(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepBlastDB {
+		if v.StartingCodonID == b.StartingCodonID {
+			bFound = true
+		}
+		if v.StartingCodonID == c.StartingCodonID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepCodonSlice{&a}
+	if err = a.L.LoadStartingCodonUpepBlastDBS(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.StartingCodonUpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.StartingCodonUpepBlastDBS = nil
+	if err = a.L.LoadStartingCodonUpepBlastDBS(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.StartingCodonUpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepBlastDB)
+	}
+}
+
+func testUpepCodonToManyEndingCodonUpepBlastDBS(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepCodon
+	var b, c UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepCodonDBTypes, true, upepCodonColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepCodon struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+
+	b.EndingCodonID = a.ID
+	c.EndingCodonID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepBlastDB, err := a.EndingCodonUpepBlastDBS(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepBlastDB {
+		if v.EndingCodonID == b.EndingCodonID {
+			bFound = true
+		}
+		if v.EndingCodonID == c.EndingCodonID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepCodonSlice{&a}
+	if err = a.L.LoadEndingCodonUpepBlastDBS(tx, false, (*[]*UpepCodon)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.EndingCodonUpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.EndingCodonUpepBlastDBS = nil
+	if err = a.L.LoadEndingCodonUpepBlastDBS(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.EndingCodonUpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepBlastDB)
+	}
+}
+
 func testUpepCodonToManyStartingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -606,6 +750,154 @@ func testUpepCodonToManyEndingCodonUpepSorfPositions(t *testing.T) {
 	}
 }
 
+func testUpepCodonToManyAddOpStartingCodonUpepBlastDBS(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepCodon
+	var b, c, d, e UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepBlastDB{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepBlastDB{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddStartingCodonUpepBlastDBS(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.StartingCodonID {
+			t.Error("foreign key was wrong value", a.ID, first.StartingCodonID)
+		}
+		if a.ID != second.StartingCodonID {
+			t.Error("foreign key was wrong value", a.ID, second.StartingCodonID)
+		}
+
+		if first.R.StartingCodon != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.StartingCodon != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.StartingCodonUpepBlastDBS[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.StartingCodonUpepBlastDBS[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.StartingCodonUpepBlastDBS(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUpepCodonToManyAddOpEndingCodonUpepBlastDBS(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepCodon
+	var b, c, d, e UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepCodonDBTypes, false, strmangle.SetComplement(upepCodonPrimaryKeyColumns, upepCodonColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepBlastDB{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepBlastDB{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddEndingCodonUpepBlastDBS(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.EndingCodonID {
+			t.Error("foreign key was wrong value", a.ID, first.EndingCodonID)
+		}
+		if a.ID != second.EndingCodonID {
+			t.Error("foreign key was wrong value", a.ID, second.EndingCodonID)
+		}
+
+		if first.R.EndingCodon != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.EndingCodon != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.EndingCodonUpepBlastDBS[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.EndingCodonUpepBlastDBS[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.EndingCodonUpepBlastDBS(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
 func testUpepCodonToManyAddOpStartingCodonUpepSorfPositions(t *testing.T) {
 	var err error
 

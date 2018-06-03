@@ -462,6 +462,294 @@ func testUpepRefSeqDBSInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testUpepRefSeqDBToManyUpepAccessions(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c UpepAccession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, true, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepAccessionDBTypes, false, upepAccessionColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepAccessionDBTypes, false, upepAccessionColumnsWithDefault...)
+
+	b.UpepRefSeqDBID = a.ID
+	c.UpepRefSeqDBID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepAccession, err := a.UpepAccessions(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepAccession {
+		if v.UpepRefSeqDBID == b.UpepRefSeqDBID {
+			bFound = true
+		}
+		if v.UpepRefSeqDBID == c.UpepRefSeqDBID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepRefSeqDBSlice{&a}
+	if err = a.L.LoadUpepAccessions(tx, false, (*[]*UpepRefSeqDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepAccessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.UpepAccessions = nil
+	if err = a.L.LoadUpepAccessions(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepAccessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepAccession)
+	}
+}
+
+func testUpepRefSeqDBToManyUpepBlastDBS(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, true, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepBlastDBDBTypes, false, upepBlastDBColumnsWithDefault...)
+
+	b.UpepRefSeqDBID = a.ID
+	c.UpepRefSeqDBID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepBlastDB, err := a.UpepBlastDBS(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepBlastDB {
+		if v.UpepRefSeqDBID == b.UpepRefSeqDBID {
+			bFound = true
+		}
+		if v.UpepRefSeqDBID == c.UpepRefSeqDBID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepRefSeqDBSlice{&a}
+	if err = a.L.LoadUpepBlastDBS(tx, false, (*[]*UpepRefSeqDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.UpepBlastDBS = nil
+	if err = a.L.LoadUpepBlastDBS(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepBlastDBS); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepBlastDB)
+	}
+}
+
+func testUpepRefSeqDBToManyUpepGeneIdentifiers(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c UpepGeneIdentifier
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, true, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepGeneIdentifierDBTypes, false, upepGeneIdentifierColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepGeneIdentifierDBTypes, false, upepGeneIdentifierColumnsWithDefault...)
+
+	b.UpepRefSeqDBID = a.ID
+	c.UpepRefSeqDBID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepGeneIdentifier, err := a.UpepGeneIdentifiers(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepGeneIdentifier {
+		if v.UpepRefSeqDBID == b.UpepRefSeqDBID {
+			bFound = true
+		}
+		if v.UpepRefSeqDBID == c.UpepRefSeqDBID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepRefSeqDBSlice{&a}
+	if err = a.L.LoadUpepGeneIdentifiers(tx, false, (*[]*UpepRefSeqDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepGeneIdentifiers); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.UpepGeneIdentifiers = nil
+	if err = a.L.LoadUpepGeneIdentifiers(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepGeneIdentifiers); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepGeneIdentifier)
+	}
+}
+
+func testUpepRefSeqDBToManyUpepOrganisms(t *testing.T) {
+	var err error
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c UpepOrganism
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, true, upepRefSeqDBColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UpepRefSeqDB struct: %s", err)
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	randomize.Struct(seed, &b, upepOrganismDBTypes, false, upepOrganismColumnsWithDefault...)
+	randomize.Struct(seed, &c, upepOrganismDBTypes, false, upepOrganismColumnsWithDefault...)
+
+	b.UpepRefSeqDBID = a.ID
+	c.UpepRefSeqDBID = a.ID
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	upepOrganism, err := a.UpepOrganisms(tx).All()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range upepOrganism {
+		if v.UpepRefSeqDBID == b.UpepRefSeqDBID {
+			bFound = true
+		}
+		if v.UpepRefSeqDBID == c.UpepRefSeqDBID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := UpepRefSeqDBSlice{&a}
+	if err = a.L.LoadUpepOrganisms(tx, false, (*[]*UpepRefSeqDB)(&slice)); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepOrganisms); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.UpepOrganisms = nil
+	if err = a.L.LoadUpepOrganisms(tx, true, &a); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UpepOrganisms); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", upepOrganism)
+	}
+}
+
 func testUpepRefSeqDBToManyRefSeqDBUpepRefSeqEntries(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -536,6 +824,302 @@ func testUpepRefSeqDBToManyRefSeqDBUpepRefSeqEntries(t *testing.T) {
 	}
 }
 
+func testUpepRefSeqDBToManyAddOpUpepAccessions(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c, d, e UpepAccession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepAccession{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepAccessionDBTypes, false, strmangle.SetComplement(upepAccessionPrimaryKeyColumns, upepAccessionColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepAccession{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUpepAccessions(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, first.UpepRefSeqDBID)
+		}
+		if a.ID != second.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, second.UpepRefSeqDBID)
+		}
+
+		if first.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.UpepAccessions[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.UpepAccessions[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.UpepAccessions(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUpepRefSeqDBToManyAddOpUpepBlastDBS(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c, d, e UpepBlastDB
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepBlastDB{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepBlastDBDBTypes, false, strmangle.SetComplement(upepBlastDBPrimaryKeyColumns, upepBlastDBColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepBlastDB{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUpepBlastDBS(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, first.UpepRefSeqDBID)
+		}
+		if a.ID != second.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, second.UpepRefSeqDBID)
+		}
+
+		if first.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.UpepBlastDBS[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.UpepBlastDBS[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.UpepBlastDBS(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUpepRefSeqDBToManyAddOpUpepGeneIdentifiers(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c, d, e UpepGeneIdentifier
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepGeneIdentifier{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepGeneIdentifierDBTypes, false, strmangle.SetComplement(upepGeneIdentifierPrimaryKeyColumns, upepGeneIdentifierColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepGeneIdentifier{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUpepGeneIdentifiers(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, first.UpepRefSeqDBID)
+		}
+		if a.ID != second.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, second.UpepRefSeqDBID)
+		}
+
+		if first.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.UpepGeneIdentifiers[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.UpepGeneIdentifiers[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.UpepGeneIdentifiers(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testUpepRefSeqDBToManyAddOpUpepOrganisms(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer tx.Rollback()
+
+	var a UpepRefSeqDB
+	var b, c, d, e UpepOrganism
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, upepRefSeqDBDBTypes, false, strmangle.SetComplement(upepRefSeqDBPrimaryKeyColumns, upepRefSeqDBColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UpepOrganism{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, upepOrganismDBTypes, false, strmangle.SetComplement(upepOrganismPrimaryKeyColumns, upepOrganismColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UpepOrganism{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUpepOrganisms(tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, first.UpepRefSeqDBID)
+		}
+		if a.ID != second.UpepRefSeqDBID {
+			t.Error("foreign key was wrong value", a.ID, second.UpepRefSeqDBID)
+		}
+
+		if first.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.UpepRefSeqDB != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.UpepOrganisms[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.UpepOrganisms[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.UpepOrganisms(tx).Count()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
 func testUpepRefSeqDBToManyAddOpRefSeqDBUpepRefSeqEntries(t *testing.T) {
 	var err error
 

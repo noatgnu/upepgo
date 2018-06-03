@@ -16,14 +16,19 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
 	"gopkg.in/volatiletech/null.v6"
+	"upepgo/helper"
+	"encoding/json"
+	"net/http"
+			"fmt"
+	"upepgo/wrapper"
 )
 
 var reLocus = regexp.MustCompile(`([\w\-]+)`)
 var reFeature = regexp.MustCompile(`(\w+)\s+(<*\d+)\.\.(>*\d+)`)
 var reAccession = regexp.MustCompile(`(\w+)`)
 var host = "ftp.ncbi.nlm.nih.gov:21"
-var base = "/refseq/release/"
-var releaseMap = map[string]string{
+var Base = "/refseq/release/"
+var ReleaseMap = map[string]string{
 	"Complete": "complete",
 	"Fungi": "fungi",
 	"Invertebrate": "invertebrate",
@@ -39,12 +44,12 @@ var initCodons = map[string][]string{
 }
 
 type RefSInf struct {
-	RefSeq models.UpepRefSeqEntry
-	Features []models.UpepFeature
+	RefSeq        models.UpepRefSeqEntry
+	Features      []models.UpepFeature
 	MolecularType models.UpepMolecularType
-	Organism models.UpepOrganism
-	Accession models.UpepAccession
-	GI models.UpepGeneIdentifier
+	Organism      models.UpepOrganism
+	Accession     models.UpepAccession
+	GI            models.UpepGeneIdentifier
 }
 
 
@@ -82,8 +87,7 @@ TRUNCATE TABLE upep.upep_sorf_positions
     db.Exec(r)
 }
 
-func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
-	EnChan := make(chan *ftp.Entry)
+func CreateFtpClient() *ftp.ServerConn {
 	client, err := ftp.Dial(host)
 	if err != nil {
 		log.Panicln(err)
@@ -91,13 +95,19 @@ func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
 	if err := client.Login("anonymous", "toan.phung@uq.net.au"); err != nil {
 		log.Panicln(err)
 	}
+	return client
+}
+
+func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
+	EnChan := make(chan *ftp.Entry)
+	client := CreateFtpClient()
 	version := GetRemoteReleaseVersion(client)
 	log.Println(version)
 	go func() {
 		localDBs := GetLocalDBVersion(db, dbList)
 		for i := range localDBs {
 			if localDBs[i].Version < version {
-				fileList, err := client.List(base + releaseMap[localDBs[i].Name])
+				fileList, err := client.List(Base + ReleaseMap[localDBs[i].Name])
 				if err != nil {
 					log.Panicln(err)
 				}
@@ -211,6 +221,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 
 		var res RefSInf
 		res.RefSeq = models.UpepRefSeqEntry{}
+
 		for r := range rsChan {
 			if strings.TrimSpace(r) == "//" {
 				seqFlag = false
@@ -232,6 +243,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 				} else if strings.HasPrefix(r, "ACCESSION") {
 					acc := reAccession.FindAllString(r, -1)
 					res.Accession.Accession = acc[1]
+					res.Accession.UpepRefSeqDBID = source
 				} else if strings.HasPrefix(r, "VERSION") {
 					if strings.Contains(r, "GI") {
 						s := strings.Index(r, "GI:")
@@ -240,12 +252,12 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 							log.Panicln(err)
 						}
 						res.GI.Gi = GI
+						res.GI.UpepRefSeqDBID = source
 					}
 				} else if strings.HasPrefix(r, "  ORGANISM") {
 					res.Organism.Name = strings.TrimSpace(r[12:])
-
+					res.Organism.UpepRefSeqDBID = source
 				} else if strings.HasPrefix(r, "ORIGIN") {
-
 					seqFlag = true
 					featureFlag = false
 				} else if strings.HasPrefix(r, "FEATURES") {
@@ -254,7 +266,10 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 					if !strings.HasPrefix(r, "      ") {
 						feature := reFeature.FindAllStringSubmatch(r[5:], -1)
 						if len(feature) > 0 {
-							f := models.UpepFeature{Name: strings.ToUpper(feature[0][1])}
+							f := models.UpepFeature{
+								Name:          strings.ToUpper(feature[0][1]),
+								RefSeqEntryID: source,
+							}
 							if strings.Contains(feature[0][2], "<") {
 								start, err := strconv.Atoi(strings.TrimPrefix(feature[0][2], "<"))
 								if err != nil {
@@ -294,7 +309,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 	return sqlChan
 }
 
-func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon) {
+func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, blastdbWriter chan []string) {
 	sqlChan := ParseRefSeqDB(path, source)
 
 	molecularTypeMap := make(map[string]models.UpepMolecularType)
@@ -305,13 +320,27 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[stri
 		if err != nil {
 			log.Panicln(err)
 		}
+
 		if val, ok := molecularTypeMap[res.MolecularType.Name]; ok {
 			res.RefSeq.MolecularTypeID = null.NewInt64(val.ID, true)
 		} else {
-			err := res.MolecularType.Insert(db)
+			exists, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).Exists()
 			if err != nil {
-				tx.Rollback()
-				log.Panicln(res.MolecularType)
+				log.Panicln(err)
+			}
+			if !exists {
+				err := res.MolecularType.Insert(db)
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(res.MolecularType)
+				}
+			} else {
+				mt, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).One()
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(res.MolecularType)
+				}
+				res.MolecularType = *mt
 			}
 			res.RefSeq.MolecularTypeID = null.NewInt64(res.MolecularType.ID, true)
 			molecularTypeMap[res.MolecularType.Name] = res.MolecularType
@@ -319,10 +348,23 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[stri
 		if val, ok := organismMap[res.Organism.Name]; ok {
 			res.RefSeq.OrganismID = null.NewInt64(val.ID, true)
 		} else {
-			err := res.Organism.Insert(db)
+			exists, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).Exists()
 			if err != nil {
-				tx.Rollback()
-				log.Panicln(res.Organism)
+				log.Panicln(err)
+			}
+			if exists {
+				org, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).One()
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(err)
+				}
+				res.Organism = *org
+			} else {
+				err := res.Organism.Insert(db)
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(res.Organism)
+				}
 			}
 			res.RefSeq.OrganismID = null.NewInt64(res.Organism.ID, true)
 			organismMap[res.Organism.Name] = res.Organism
@@ -360,32 +402,103 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[stri
 			res.Features[i].Insert(tx)
 		}
 		tx.Commit()
-		if CDS.Name == "CDS" {
-			cUpep := ParseUpep(res.RefSeq, CDS.FeatureEnd, startingCodons, endingCodons, db)
-			tx, err := db.Begin()
-			if err != nil {
-				tx.Rollback()
-				log.Panicln(res.RefSeq)
-			}
-			for c := range cUpep {
-				sorfLen := c.EndingPosition-c.StartingPosition
-				if (c.StartingPosition != CDS.FeatureStart) && (15<=sorfLen) && (sorfLen <=600){
-					err := c.Insert(tx)
-					if err != nil {
-						tx.Rollback()
-						log.Println(c.RefSeqEntryID)
-						log.Println(c)
-						log.Panicln(err)
-
+		if CDS != nil {
+			if CDS.Name == "CDS" {
+				cUpep := ParseUpep(res.RefSeq, CDS.FeatureEnd, startingCodons, endingCodons, db)
+				tx, err := db.Begin()
+				if err != nil {
+					tx.Rollback()
+					log.Panicln(res.RefSeq)
+				}
+				var sorfArray []*models.UpepSorfPosition
+				for c := range cUpep {
+					sorfLen := c.EndingPosition-c.StartingPosition
+					if (c.StartingPosition != CDS.FeatureStart) && (15<=sorfLen) && (sorfLen <=600){
+						err := c.Insert(tx)
+						if err != nil {
+							tx.Rollback()
+							log.Println(c.RefSeqEntryID)
+							log.Println(c)
+							log.Panicln(err)
+						}
+						sorfArray = append(sorfArray, c)
 					}
 				}
+				tx.Commit()
+				for _, val := range sorfArray {
+					sequence := res.RefSeq.RefSeqSequence[val.StartingPosition-1:val.EndingPosition]
+					temp := fmt.Sprintf(">%v\n%v\n\n", val.ID, sequence)
+					blastdbWriter <- []string{temp, fmt.Sprintf("%v", val.StartingCodonID), fmt.Sprintf("%v", val.EndingCodonID)}
+				}
 			}
-			tx.Commit()
 		}
 		count ++
 	}
+	close(blastdbWriter)
 }
 
+func RequestRefSeqInformationStatus(w http.ResponseWriter, db *sql.DB, remote bool) {
+	var client *ftp.ServerConn
+	var remoteVersion int
+	if remote {
+		client = CreateFtpClient()
+		remoteVersion = GetRemoteReleaseVersion(client)
+	}
+
+	rsdb := make(map[string][]*ftp.Entry)
+	var dbs []*models.UpepRefSeqDB
+	for k, v := range ReleaseMap {
+		if remote {
+			fileList, err := client.List(Base + v)
+			if err != nil {
+				log.Panicln(err)
+			}
+			rsdb[v] = fileList
+			res, err := models.UpepRefSeqDBS(db, qm.Where("name=?", k)).One()
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Panicln(err)
+				} else {
+
+				}
+			}
+			if res != nil {
+				dbs = append(dbs, res)
+			} else {
+				dbs = append(dbs, &models.UpepRefSeqDB{
+					ID:        0,
+					CreatedAt: null.Time{},
+					UpdatedAt: null.Time{},
+					Name:      k,
+					Version:   0,
+				})
+			}
+		} else {
+			dbs = append(dbs, &models.UpepRefSeqDB{
+				ID:        0,
+				CreatedAt: null.Time{},
+				UpdatedAt: null.Time{},
+				Name:      k,
+				Version:   0,
+			})
+		}
+	}
+	q := helper.RefSeqQuery{
+		CurrentDB:   dbs,
+		FileListMap: rsdb,
+		RemoteDB:    remoteVersion,
+		ReleaseMap: ReleaseMap,
+	}
+	log.Println(q)
+	if remote {
+		client.Logout()
+		client.Quit()
+	}
+	err := json.NewEncoder(w).Encode(q)
+	if err != nil {
+		log.Panicln(err)
+	}
+}
 
 func GetLocalDBVersion(db *sql.DB, checkSelect []string) (localDBs []*models.UpepRefSeqDB) {
 	tx, err := db.Begin()
@@ -404,8 +517,19 @@ func GetLocalDBVersion(db *sql.DB, checkSelect []string) (localDBs []*models.Upe
 	return localDBs
 }
 
+func GetLocalDB(w http.ResponseWriter, db *sql.DB) {
+	q, err := models.UpepRefSeqDBS(db).All()
+	if err != nil {
+		log.Panicln(err)
+	}
+	err = json.NewEncoder(w).Encode(q)
+	if err != nil {
+		log.Panicln(err)
+	}
+}
+
 func GetRemoteReleaseVersion(client *ftp.ServerConn) (ver int) {
-	DownloadToTemp(client, "RELEASE_NUMBER")
+	DownloadToTemp(client, "RELEASE_NUMBER", "")
 
 	o, err := os.Open("temp/RELEASE_NUMBER")
 	if err != nil {
@@ -423,9 +547,9 @@ func GetRemoteReleaseVersion(client *ftp.ServerConn) (ver int) {
 	return ver
 }
 
-func DownloadToTemp(client *ftp.ServerConn, fileName string) {
+func DownloadToTemp(client *ftp.ServerConn, fileName string, path string) {
 	log.Printf("Downloading %v", fileName)
-	rn, err := client.Retr(base + fileName)
+	rn, err := client.Retr(Base + path + fileName)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -477,4 +601,44 @@ func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, startingCodons map[
 		close(c)
 	}()
 	return c
+}
+
+func DeleteDB(dbname string, db *sql.DB) {
+	e, err := models.UpepRefSeqDBS(db, qm.Where("name=?", dbname)).All()
+	if err != nil {
+		log.Panicln(err)
+	}
+	db.Exec(`CREATE INDEX acc_ref_seq_db ON upep.upep_accessions(upep_ref_seq_db_id);
+CREATE INDEX blast_ref_seq_db ON upep.upep_blast_db(upep_ref_seq_db_id);
+CREATE INDEX feature_ref_seq_db ON upep.upep_features(ref_seq_entry_id);
+CREATE INDEX gi_ref_seq_db ON upep.upep_gene_identifiers(upep_ref_seq_db_id);
+CREATE INDEX org_ref_seq_db ON upep.upep_organisms(upep_ref_seq_db_id);
+CREATE INDEX ent_org ON upep.upep_ref_seq_entries(organism_id);
+CREATE INDEX ent_acc ON upep.upep_ref_seq_entries(accession_id);
+CREATE INDEX ent_gi ON upep.upep_ref_seq_entries(gi_id);
+CREATE INDEX ent_ref_seq_db ON upep.upep_ref_seq_entries(ref_seq_db_id);
+CREATE INDEX pos_ref_seq_ent ON upep.upep_sorf_positions(ref_seq_entry_id);`)
+	e.DeleteAll(db)
+	db.Exec(`DROP INDEX upep.acc_ref_seq_db;
+DROP INDEX upep.blast_ref_seq_db;
+DROP INDEX upep.feature_ref_seq_db;
+DROP INDEX upep.gi_ref_seq_db;
+DROP INDEX upep.org_ref_seq_db;
+DROP INDEX upep.ent_org;
+DROP INDEX upep.ent_acc;
+DROP INDEX upep.ent_gi;
+DROP INDEX upep.ent_ref_seq_db;
+DROP INDEX upep.pos_ref_seq_ent;`)
+}
+
+func MakeBlastDB(path string, sourceFile string, blastdb string) {
+	b := wrapper.MakeBlastDBCommandline{}
+	b.Command = path
+	b.In = sourceFile
+	b.DB = "nucl"
+	b.Out = blastdb
+	err := b.Execute()
+	if err != nil {
+		log.Panicln(err)
+	}
 }
