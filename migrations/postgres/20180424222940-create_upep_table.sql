@@ -145,18 +145,28 @@ create table if not exists upep.upep_blast_db
 ;
 
 
-create table if not exists upep.upep_codon
+CREATE TABLE upep.upep_codon
 (
-	created_at timestamp with time zone,
-	updated_at timestamp with time zone,
-	starting_codon boolean default false not null,
-	ending_codon boolean default false not null,
-	sequence char(3) not null,
-	id bigserial not null
-		constraint upep_codon_id_pk
-			primary key
-)
-;
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    starting_codon boolean DEFAULT false NOT NULL,
+    ending_codon boolean DEFAULT false NOT NULL,
+    sequence char(3) NOT NULL,
+    id bigint DEFAULT nextval('upep.upep_codon_id_seq'::regclass) PRIMARY KEY NOT NULL
+);
+CREATE UNIQUE INDEX upep_codon_sequence_uindex ON upep.upep_codon (sequence);
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.555813');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.557814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.558814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.559814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.559814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.559814');
+INSERT INTO upep.upep_codon (updated_at) VALUES ('2018-05-29 14:18:03.559814');
 
 create unique index if not exists upep_codon_sequence_uindex
 	on upep.upep_codon (sequence)

@@ -8,6 +8,11 @@ import (
 	"encoding/xml"
 	"os"
 	"strconv"
+	"io"
+	"upepgo/models"
+	"database/sql"
+	"github.com/volatiletech/sqlboiler/queries/qm"
+	"upepgo/helper"
 )
 
 type TBlastXCommandline struct {
@@ -27,11 +32,20 @@ type TBlastXNode struct {
 	Nodes   []TBlastXNode `xml:",any"`
 }
 
+type TBlastXQuery struct {
+	QueryID string
+	Seq string
+	Hits []TBlastXHit
+}
+
 type TBlastXHit struct {
-	ID string
+	QueryID string
+	HitID int64
+	Hit *models.UpepSorfPosition
 	Def string
 	Accession string
 	Length int
+	Seq string
 	Hsps []TBlastXHsp
 }
 
@@ -79,21 +93,21 @@ func (t *TBlastXCommandline) CommandBuild() (commandArray []string, err error) {
 		commandArray = append(commandArray, "tblastx")
 	}
 	if t.DB != "" {
-		commandArray = append(commandArray, "-d", t.DB)
+		commandArray = append(commandArray, "-db", t.DB)
 	} else {
 		return nil, errors.New("text: need db type")
 	}
 	if t.In != "" {
-		commandArray = append(commandArray, "-i", t.In)
+		commandArray = append(commandArray, "-query", t.In)
 	} else {
 		return nil, errors.New("text: need input file")
 	}
 	if t.Filter {
 		commandArray = append(commandArray, "-F")
 	}
-	commandArray = append(commandArray, "-e", fmt.Sprintf("%v", t.Evalue), "-m", fmt.Sprintf("%v", t.Outfmt))
+	commandArray = append(commandArray, "-evalue", fmt.Sprintf("%v", t.Evalue), "-outfmt", fmt.Sprintf("%v", t.Outfmt))
 	if t.Out != "" {
-		commandArray = append(commandArray, "-o", t.Out)
+		commandArray = append(commandArray, "-out", t.Out)
 	} else {
 		return nil, errors.New("text: need output file")
 	}
@@ -101,29 +115,71 @@ func (t *TBlastXCommandline) CommandBuild() (commandArray []string, err error) {
 	return commandArray, nil
 }
 
-func ReadTBlastXOutput(path string) {
+func ParseHitTBlastXOutputXML(path string, querySeqMap map[string]*helper.Sequence, db *sql.DB) []TBlastXQuery {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Panicln(err)
 	}
+	c := make(chan TBlastXHit)
+	m := make(map[int64]*models.UpepSorfPosition)
+	queries := make([]TBlastXQuery, len(querySeqMap))
+	queriesMapToArray := make(map[string]int)
+	count := 0
+	for k := range querySeqMap {
+		queries[count] = TBlastXQuery{
+			QueryID: k,
+			Seq:     querySeqMap[k].Seq,
+			Hits:    []TBlastXHit{},
+		}
+		queriesMapToArray[k] = count
+		count++
+	}
+	go ParseFromXMLReader(f, c)
+	for h := range c {
+		if _, ok := m[h.HitID]; !ok {
+			sorf, err := models.UpepSorfPositions(db, qm.Where("id=?", h.HitID), qm.Load("RefSeqEntry")).One()
+			if err != nil {
+				log.Panicln(err)
+			}
+			m[h.HitID] = sorf
+		}
+		h.Seq = m[h.HitID].R.RefSeqEntry.RefSeqSequence[m[h.HitID].StartingPosition-1:m[h.HitID].EndingPosition]
+		if val, ok := queriesMapToArray[h.QueryID]; ok {
+			queries[val].Hits = append(queries[val].Hits, h)
+		}
+	}
+	f.Close()
+	return queries[:]
+}
+
+
+
+func ParseFromXMLReader(f io.Reader,c chan TBlastXHit) {
 	var node TBlastXNode
 	decoder := xml.NewDecoder(f)
-	err = decoder.Decode(&node)
+	err := decoder.Decode(&node)
 	if err != nil {
 		log.Panicln(err)
 	}
 	var hit TBlastXHit
 	var hsp TBlastXHsp
+	var currentQuery string
 	walk([]TBlastXNode{node}, func(node TBlastXNode) bool {
 		switch node.XMLName.Local {
+		case "Iteration_query-def":
+			currentQuery = string(node.Content)
 		case "Hit":
 			if hit.Hsps != nil {
-
+				c <- hit
 			}
 			hit = TBlastXHit{}
+			hit.QueryID = currentQuery
 			hit.Hsps = []TBlastXHsp{}
 		case "Hit_id":
-			hit.ID = string(node.Content)
+			hit.HitID, err = strconv.ParseInt(string(node.Content), 10, 64)
+			if err != nil {
+				log.Panicln(err)
+			}
 		case "Hit_def":
 			hit.Def = string(node.Content)
 		case "Hit_accession":
@@ -226,6 +282,7 @@ func ReadTBlastXOutput(path string) {
 		}
 		return true
 	})
+	close(c)
 }
 
 func walk(nodes []TBlastXNode, f func(TBlastXNode) bool) {

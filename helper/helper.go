@@ -11,6 +11,17 @@ import (
 	"bufio"
 )
 
+type SearchQuery struct {
+	BlastDB []int64 `json:"Blastdb"`
+	Evalue string `json:"Evalue"`
+	Sequences []Sequence `json:"Sequences"`
+}
+
+type Sequence struct {
+	Header string `json:"Header"`
+	Seq string `json:"Seq"`
+}
+
 type RefSeqQuery struct {
 	CurrentDB []*models.UpepRefSeqDB
 	FileListMap map[string][]*ftp.Entry
@@ -40,6 +51,10 @@ type BlastDBWriter struct {
 
 var migrations = &migrate.FileMigrationSource{
 	Dir: "migrations",
+}
+
+func (s Sequence) ToString() string {
+	return fmt.Sprintf(">%v\n%v\n\n", s.Header, s.Seq)
 }
 
 func UpMigrations(db *sql.DB) {

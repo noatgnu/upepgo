@@ -27,7 +27,9 @@ import (
 	"github.com/jlaffaye/ftp"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 	"strings"
-	)
+	"github.com/rs/xid"
+	"upepgo/wrapper"
+)
 
 var driver = flag.String("driver", "postgres", "Name of database driver to be used")
 var dbName = flag.String("db", "", "Name of database")
@@ -223,6 +225,76 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetBlastDBHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if r.Method == "GET" {
+		id, err := strconv.ParseInt(vars["blastdbId"], 10, 64)
+		if err != nil {
+			log.Panicln(err)
+		}
+		if id == 0 {
+			blastdbs, err := models.UpepBlastDBS(db, qm.Select("id", "upep_ref_seq_db_id", "starting_codon_id", "ending_codon_id")).All()
+			if err != nil {
+				log.Panicln(err)
+			}
+			encoder := json.NewEncoder(w)
+			err = encoder.Encode(blastdbs)
+			if err != nil {
+				log.Panicln(err)
+			}
+			return
+		}
+	}
+}
+
+func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var query helper.SearchQuery
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&query)
+		if err != nil {
+			log.Panicln(err)
+		}
+		evalue, err := strconv.ParseFloat(query.Evalue, 64)
+		if err != nil {
+			log.Panicln(err)
+		}
+		guid := xid.New()
+		inp := filepath.Join(config.Temp, guid.String()+".in")
+		f, err := os.Create(inp)
+		writer := bufio.NewWriter(f)
+		queryMap := make(map[string]*helper.Sequence)
+		for s := range query.Sequences {
+			queryMap[query.Sequences[s].Header] = &query.Sequences[s]
+			writer.WriteString(query.Sequences[s].ToString())
+		}
+		writer.Flush()
+		f.Close()
+		for b := range query.BlastDB {
+			blastDB, err := models.FindUpepBlastDB(db, query.BlastDB[b])
+			if err != nil {
+				log.Panicln(err)
+			}
+			tblastcmd := wrapper.TBlastXCommandline{
+				Command:     config.Blast,
+				In:          inp,
+				DB:          blastDB.Path,
+				Filter:      false,
+				Out:         inp+".xml",
+				Evalue:      evalue,
+				Outfmt:      5,
+				CommandLine: nil,
+			}
+			tblastcmd.Execute()
+			queriesOut := wrapper.ParseHitTBlastXOutputXML(inp+".xml", queryMap, db)
+			log.Println(queriesOut)
+		}
+		log.Println(evalue)
+		log.Println(query.Sequences)
+		log.Println(query.BlastDB)
+	}
+}
+
 func main()  {
 	var err error
 	flag.Parse()
@@ -264,6 +336,8 @@ func main()  {
 		r.HandleFunc("/request/organisms/limit/{limit}/{dbId}/", GetOrganismsHandler)
 		r.HandleFunc("/admin/request/refreshdb/{dbname}/{totalNumber}/{version}/{test}/", AdminRefreshRefSeqHandler)
 		r.HandleFunc("/admin/request/initcodons/", AdminInitCodons)
+		r.HandleFunc("/request/blastdb/{blastdbId}/", GetBlastDBHandler)
+		r.HandleFunc("/request/search-sorf/", SearchSORFHandler)
 		srv := &http.Server{
 			Addr:         "0.0.0.0:8080",
 			// WriteTimeout: time.Second * 15,
@@ -287,7 +361,6 @@ func main()  {
 
 
 	case 5:
-		refseqdb.Truncate(db)
 		helper.DownMigrations(db)
 		helper.UpMigrations(db)
 		refseqdb.InitCodons(db)
