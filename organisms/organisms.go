@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 	"log"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 )
 
 func GetAllOrganisms(w http.ResponseWriter, vars map[string]string) {

@@ -12,15 +12,15 @@ import (
 	"strconv"
 	"github.com/jlaffaye/ftp"
 	"database/sql"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 
 	"gopkg.in/volatiletech/null.v6"
-	"upepgo/helper"
+	"github.com/noatgnu/upepgo/helper"
 	"encoding/json"
 	"net/http"
 			"fmt"
-	"upepgo/wrapper"
+	"github.com/noatgnu/upepgo/wrapper"
 )
 
 var reLocus = regexp.MustCompile(`([\w\-]+)`)

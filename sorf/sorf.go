@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"strconv"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 )
 
 func GetAllSorf(w http.ResponseWriter, vars map[string]string) {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"fmt"
 		"github.com/jlaffaye/ftp"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 	"os"
 	"bufio"
 )

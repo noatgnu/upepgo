@@ -4,7 +4,7 @@ import (
 		"log"
 	"net/http"
 	"encoding/json"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 )
 
 func GetAllCodons(w http.ResponseWriter) {

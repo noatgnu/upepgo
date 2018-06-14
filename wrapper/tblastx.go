@@ -9,10 +9,10 @@ import (
 	"os"
 	"strconv"
 	"io"
-	"upepgo/models"
+	"github.com/noatgnu/upepgo/models"
 	"database/sql"
 	"github.com/volatiletech/sqlboiler/queries/qm"
-	"upepgo/helper"
+	"github.com/noatgnu/upepgo/helper"
 )
 
 type TBlastXCommandline struct {
