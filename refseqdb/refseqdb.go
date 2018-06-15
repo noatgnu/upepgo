@@ -150,6 +150,11 @@ func InitCodons(db *sql.DB) error {
 		}
 	}
 	tx.Commit()
+	c, err := models.UpepCodons(db).All()
+	for i := range c {
+		log.Println(i)
+	}
+
 	return err
 }
 

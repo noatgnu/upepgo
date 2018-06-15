@@ -315,7 +315,23 @@ func main()  {
 		config.DBRunmode = *runMode
 	}
 
-	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v host=%v:%v", config.DBName, config.DBUser, config.DBSSL, config.DBPass, config.DBServer, config.DBPort)
+	//setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v host=%v:%v", config.DBName, config.DBUser, config.DBSSL, config.DBPass, config.DBServer, config.DBPort)
+	setting := fmt.Sprintf("user=%v ", config.DBUser)
+	if config.DBName != "" {
+		setting += fmt.Sprintf("dbname=%v ", config.DBName)
+	}
+	if config.DBSSL != "" {
+		setting += fmt.Sprintf("sslmode=%v ", config.DBSSL)
+	}
+	if config.DBServer != "" {
+		setting += fmt.Sprintf("host=%v ", config.DBServer)
+	}
+	if config.DBPort != 0 {
+		setting += fmt.Sprintf("port=%v ", config.DBPort)
+	}
+	if config.DBPass != "" {
+		setting += fmt.Sprintf("password=%v ", config.DBPort)
+	}
 	log.Println(setting)
 	db, err = sql.Open(config.DBDriver, setting)
 	if err != nil {
@@ -369,7 +385,7 @@ func main()  {
 	case 5:
 		helper.DownMigrations(db)
 		helper.UpMigrations(db)
-		//refseqdb.InitCodons(db)
+		refseqdb.InitCodons(db)
 	}
 
 

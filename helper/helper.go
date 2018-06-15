@@ -51,7 +51,7 @@ type BlastDBWriter struct {
 }
 
 var migrations = &migrate.FileMigrationSource{
-	Dir: "migrations",
+	Dir: "migrations/postgres",
 }
 
 func (s Sequence) ToString() string {
@@ -59,17 +59,19 @@ func (s Sequence) ToString() string {
 }
 
 func UpMigrations(db *sql.DB) {
-	_, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
+	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {
 		log.Panicln(err)
 	}
+	fmt.Printf("Applied %d migrations!\n", n)
 	fmt.Println("Create Schema and Table.")
 }
 
 func DownMigrations(db *sql.DB) {
-	_, err := migrate.Exec(db, "postgres", migrations, migrate.Down)
+	n, err := migrate.Exec(db, "postgres", migrations, migrate.Down)
 	if err != nil {
 		log.Panicln(err)
 	}
+	fmt.Printf("Applied %d migrations!\n", n)
 	fmt.Println("Delete Schema and Table.")
 }
