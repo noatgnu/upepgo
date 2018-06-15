@@ -41,6 +41,7 @@ type Settings struct {
 	DBSSL string
 	DBPort int
 	DBRunmode int
+	DBServer string
 }
 
 type BlastDBWriter struct {

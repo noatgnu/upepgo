@@ -315,7 +315,7 @@ func main()  {
 		config.DBRunmode = *runMode
 	}
 
-	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v port=%v", config.DBName, config.DBUser, config.DBSSL, config.DBPass, config.DBPort)
+	setting := fmt.Sprintf("dbname=%v user=%v sslmode=%v password=%v port=%v host=%v", config.DBName, config.DBUser, config.DBSSL, config.DBPass, config.DBPort, config.DBServer)
 	db, err = sql.Open(config.DBDriver, setting)
 	if err != nil {
 		log.Fatalln(err)
