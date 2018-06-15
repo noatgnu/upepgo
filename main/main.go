@@ -321,6 +321,11 @@ func main()  {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	err = db.Ping()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	boil.SetDB(db)
 	defer db.Close()
 	switch config.DBRunmode {
