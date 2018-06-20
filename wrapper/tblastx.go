@@ -66,6 +66,7 @@ type TBlastXHsp struct {
 	QuerySeq string
 	HitSeq string
 	Midline string
+	LaganAlign helper.LaganAlignment
 }
 
 func (t *TBlastXCommandline) Execute() (err error) {

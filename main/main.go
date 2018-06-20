@@ -260,7 +260,8 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 			log.Panicln(err)
 		}
 		guid := xid.New()
-		inp := filepath.Join(config.Temp, guid.String()+".in")
+		guidString := guid.String()
+		inp := filepath.Join(config.Temp, guidString +".in")
 		f, err := os.Create(inp)
 		writer := bufio.NewWriter(f)
 		queryMap := make(map[string]*helper.Sequence)
@@ -270,13 +271,14 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		writer.Flush()
 		f.Close()
+		result := make([][]wrapper.TBlastXQuery, len(query.BlastDB))
 		for b := range query.BlastDB {
 			blastDB, err := models.FindUpepBlastDB(db, query.BlastDB[b])
 			if err != nil {
 				log.Panicln(err)
 			}
 			tblastcmd := wrapper.TBlastXCommandline{
-				Command:     config.Blast,
+				Command:     config.TBlastX,
 				In:          inp,
 				DB:          blastDB.Path,
 				Filter:      false,
@@ -287,12 +289,52 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			tblastcmd.Execute()
 			queriesOut := wrapper.ParseHitTBlastXOutputXML(inp+".xml", queryMap, db)
+			for _, qv := range queriesOut {
+				for _, hv := range qv.Hits {
+					for _, hsp := range hv.Hsps {
+						upep := helper.Sequence{Header: hv.Def, Seq: hv.Seq[hsp.HitStartPosition-1:hsp.HitEndPosition]}
+						query := helper.Sequence{Header: qv.QueryID, Seq: qv.Seq[hsp.QueryStartPosition-1:hsp.QueryEndPosition]}
+						upepFile := fmt.Sprintf("%v_upep", inp)
+						queryFile := fmt.Sprintf("%v_query", inp)
+						CreateFastaFile(upepFile, upep)
+						CreateFastaFile(queryFile, query)
+						l := wrapper.LaganDBCommandline{}
+						l.Command = config.LaganLoc
+						l.In1 = upepFile
+						l.In2 = queryFile
+						l.Out = fmt.Sprintf("%v_out", inp)
+						err := l.Execute()
+						if err != nil {
+							log.Panicln(err)
+						}
+						hsp.LaganAlign = wrapper.ParseLaganCMDOutPut(l.Out)
+					}
+				}
+			}
 			log.Println(queriesOut)
+			result[b] = queriesOut
+		}
+		encoder := json.NewEncoder(w)
+		err := encoder.Encode(result)
+		if err != nil {
+			log.Panicln(err)
 		}
 		log.Println(evalue)
 		log.Println(query.Sequences)
 		log.Println(query.BlastDB)
 	}
+}
+
+func CreateFastaFile(filep string, seq helper.Sequence) error {
+	f, err := os.Create(filep)
+	if err != nil {
+		log.Panicln(err)
+	}
+	writer := bufio.NewWriter(f)
+	writer.WriteString(seq.ToString())
+	writer.Flush()
+	f.Close()
+	return err
 }
 
 func main()  {

@@ -34,6 +34,7 @@ type Settings struct {
 	Blastdb string
 	Blast string
 	MakeBlastDB string
+	TBlastX string
 	DBDriver string
 	DBName string
 	DBUser string
@@ -42,12 +43,19 @@ type Settings struct {
 	DBPort int
 	DBRunmode int
 	DBServer string
+	LaganLoc string
 }
 
 type BlastDBWriter struct {
 	File *os.File
 	Writer *bufio.Writer
 	BlastDB *models.UpepBlastDB
+}
+
+type LaganAlignment struct {
+	Target string
+	MidLine string
+	Query string
 }
 
 var migrations = &migrate.FileMigrationSource{
