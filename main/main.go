@@ -45,7 +45,7 @@ var config helper.Settings
 
 func AdminHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		refseqdb.RequestRefSeqInformationStatus(w, db, false)
+		refseqdb.RequestRefSeqInformationStatus(w, db, false, config.Temp)
 		return
 	}
 }
@@ -54,9 +54,9 @@ func AdminRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if r.Method == "GET" {
 		if vars["origin"] == "remote" {
-			refseqdb.RequestRefSeqInformationStatus(w, db, true)
+			refseqdb.RequestRefSeqInformationStatus(w, db, true, config.Temp)
 		} else if vars["origin"] == "local"{
-			refseqdb.RequestRefSeqInformationStatus(w, db, false)
+			refseqdb.RequestRefSeqInformationStatus(w, db, false, config.Temp)
 		}
 		return
 	}
@@ -147,7 +147,7 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 
 							if _, err := os.Stat(filepath.Join(config.Temp, val.Name)); os.IsNotExist(err) {
 								log.Printf("Started downloading %v", val.Name)
-								refseqdb.DownloadToTemp(client, val.Name, refseqdb.ReleaseMap[vars["dbname"]]+"/")
+								refseqdb.DownloadToTemp(client, val.Name, refseqdb.ReleaseMap[vars["dbname"]]+"/", config.Temp)
 								log.Printf("Finished downloading %v", val.Name)
 							}
 							log.Printf("Started processing %v", val.Name)

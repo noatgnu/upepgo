@@ -98,10 +98,10 @@ func CreateFtpClient() *ftp.ServerConn {
 	return client
 }
 
-func DownloadRefSeqDB(dbList []string, db *sql.DB) chan *ftp.Entry{
+func DownloadRefSeqDB(dbList []string, db *sql.DB, tempPath string) chan *ftp.Entry{
 	EnChan := make(chan *ftp.Entry)
 	client := CreateFtpClient()
-	version := GetRemoteReleaseVersion(client)
+	version := GetRemoteReleaseVersion(client, tempPath)
 	log.Println(version)
 	go func() {
 		localDBs := GetLocalDBVersion(db, dbList)
@@ -442,12 +442,12 @@ func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[stri
 	close(blastdbWriter)
 }
 
-func RequestRefSeqInformationStatus(w http.ResponseWriter, db *sql.DB, remote bool) {
+func RequestRefSeqInformationStatus(w http.ResponseWriter, db *sql.DB, remote bool, tempPath string) {
 	var client *ftp.ServerConn
 	var remoteVersion int
 	if remote {
 		client = CreateFtpClient()
-		remoteVersion = GetRemoteReleaseVersion(client)
+		remoteVersion = GetRemoteReleaseVersion(client, tempPath)
 	}
 
 	rsdb := make(map[string][]*ftp.Entry)
@@ -533,10 +533,10 @@ func GetLocalDB(w http.ResponseWriter, db *sql.DB) {
 	}
 }
 
-func GetRemoteReleaseVersion(client *ftp.ServerConn) (ver int) {
-	DownloadToTemp(client, "RELEASE_NUMBER", "")
+func GetRemoteReleaseVersion(client *ftp.ServerConn, tempPath string) (ver int) {
+	DownloadToTemp(client, "RELEASE_NUMBER", "", tempPath)
 
-	o, err := os.Open("temp/RELEASE_NUMBER")
+	o, err := os.Open( filepath.Join(tempPath, "RELEASE_NUMBER"))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -552,14 +552,14 @@ func GetRemoteReleaseVersion(client *ftp.ServerConn) (ver int) {
 	return ver
 }
 
-func DownloadToTemp(client *ftp.ServerConn, fileName string, path string) {
+func DownloadToTemp(client *ftp.ServerConn, fileName string, path string, tempPath string) {
 	log.Printf("Downloading %v", fileName)
 	rn, err := client.Retr(Base + path + fileName)
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer rn.Close()
-	f, err := os.Create("temp/" + fileName)
+	f, err := os.Create(filepath.Join(tempPath, fileName))
 	if err != nil {
 		log.Panicln(err)
 	}
