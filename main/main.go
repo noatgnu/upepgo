@@ -315,7 +315,7 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 			result[b] = queriesOut
 		}
 		encoder := json.NewEncoder(w)
-		err := encoder.Encode(result)
+		err = encoder.Encode(result)
 		if err != nil {
 			log.Panicln(err)
 		}
