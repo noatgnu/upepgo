@@ -36,6 +36,9 @@ type TBlastXQuery struct {
 	QueryID string
 	Seq string
 	Hits []TBlastXHit
+	StartingCodonId int64
+	EndingCodonId int64
+	OriginDB string
 }
 
 type TBlastXHit struct {
@@ -43,6 +46,7 @@ type TBlastXHit struct {
 	HitID int64
 	Hit *models.UpepSorfPosition
 	Def string
+	Organism string
 	Accession string
 	Length int
 	Seq string
@@ -138,12 +142,15 @@ func ParseHitTBlastXOutputXML(path string, querySeqMap map[string]*helper.Sequen
 	go ParseFromXMLReader(f, c)
 	for h := range c {
 		if _, ok := m[h.HitID]; !ok {
-			sorf, err := models.UpepSorfPositions(db, qm.Where("id=?", h.HitID), qm.Load("RefSeqEntry")).One()
+			sorf, err := models.UpepSorfPositions(db, qm.Where("id=?", h.HitID), qm.Load("RefSeqEntry"), qm.Load("RefSeqEntry.Organism"), qm.Load("RefSeqEntry.Accession")).One()
 			if err != nil {
 				log.Panicln(err)
 			}
 			m[h.HitID] = sorf
 		}
+		h.Accession = m[h.HitID].R.RefSeqEntry.R.Accession.Accession
+		h.Def = m[h.HitID].R.RefSeqEntry.Name.String
+		h.Organism = m[h.HitID].R.RefSeqEntry.R.Organism.Name
 		h.Seq = m[h.HitID].R.RefSeqEntry.RefSeqSequence[m[h.HitID].StartingPosition-1:m[h.HitID].EndingPosition]
 		if val, ok := queriesMapToArray[h.QueryID]; ok {
 			queries[val].Hits = append(queries[val].Hits, h)

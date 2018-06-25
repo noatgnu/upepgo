@@ -9,6 +9,7 @@ import (
 	"github.com/noatgnu/upepgo/models"
 	"os"
 	"bufio"
+	"sync"
 )
 
 type SearchQuery struct {
@@ -50,12 +51,57 @@ type BlastDBWriter struct {
 	File *os.File
 	Writer *bufio.Writer
 	BlastDB *models.UpepBlastDB
+	Folder string
 }
 
 type LaganAlignment struct {
 	Target string
 	MidLine string
 	Query string
+}
+
+type MolecularMap struct {
+	sync.Mutex
+	Map map[string]*models.UpepMolecularType
+}
+
+func (m *MolecularMap) Initialize() {
+	m.Map = make(map[string]*models.UpepMolecularType)
+}
+
+func (m *MolecularMap) Load(key string) (val *models.UpepMolecularType, ok bool) {
+	m.Lock()
+	val, ok = m.Map[key]
+	defer m.Unlock()
+	return val, ok
+}
+
+func (m *MolecularMap) Store(key string, value *models.UpepMolecularType) {
+	m.Lock()
+	defer m.Unlock()
+	m.Map[key] = value
+}
+
+type OrganismMap struct {
+	sync.Mutex
+	Map map[string]*models.UpepOrganism
+}
+
+func (o *OrganismMap) Initialize() {
+	o.Map = make(map[string]*models.UpepOrganism)
+}
+
+func (o *OrganismMap) Load(key string) (val *models.UpepOrganism, ok bool) {
+	o.Lock()
+	val, ok = o.Map[key]
+	defer o.Unlock()
+	return val, ok
+}
+
+func (o *OrganismMap) Store(key string, value *models.UpepOrganism) {
+	o.Lock()
+	defer o.Unlock()
+	o.Map[key] = value
 }
 
 var migrations = &migrate.FileMigrationSource{

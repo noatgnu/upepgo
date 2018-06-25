@@ -21,6 +21,7 @@ import (
 	"net/http"
 			"fmt"
 	"github.com/noatgnu/upepgo/wrapper"
+	"sync"
 )
 
 var reLocus = regexp.MustCompile(`([\w\-]+)`)
@@ -234,10 +235,11 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 				if res.MolecularType.Name == "mRNA" {
 					res.RefSeq.RefSeqSequence = strings.ToUpper(res.RefSeq.RefSeqSequence)
 					res.RefSeq.RefSeqDBID = null.NewInt64(source, true)
+					sqlChan <- res
 				}
-				sqlChan <- res
 				res = RefSInf{}
 				res.RefSeq = models.UpepRefSeqEntry{}
+
 			} else if seqFlag {
 				res.RefSeq.RefSeqSequence += strings.Replace(r[10:], " ", "", -1)
 			} else {
@@ -264,6 +266,7 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 					res.Organism.UpepRefSeqDBID = source
 				} else if strings.HasPrefix(r, "ORIGIN") {
 					seqFlag = true
+					res.RefSeq.RefSeqSequence = ""
 					featureFlag = false
 				} else if strings.HasPrefix(r, "FEATURES") {
 					featureFlag = true
@@ -314,132 +317,146 @@ func ParseRefSeqDB(path string, source int64) chan RefSInf {
 	return sqlChan
 }
 
-func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, blastdbWriter chan []string) {
+func ReadRefSeqDB(path string, source int64, db *sql.DB, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, blastdbWriter chan []string, workPool int, molecularTypeMap *helper.MolecularMap, organismMap *helper.OrganismMap) {
 	sqlChan := ParseRefSeqDB(path, source)
 
-	molecularTypeMap := make(map[string]models.UpepMolecularType)
-	organismMap := make(map[string]models.UpepOrganism)
+	sem := make(chan bool, workPool)
+	wg := sync.WaitGroup{}
 	count := 0
 	for res := range sqlChan {
-		tx, err := db.Begin()
+		wg.Add(1)
+		sem <- true
+		count ++
+		log.Printf("Processing %v (%v), %v", res.Accession.Accession, len(res.RefSeq.RefSeqSequence), count)
+		go func() {
+			internalRefSeqProcessingMethod(db, molecularTypeMap, res, organismMap, source, startingCodons, endingCodons, blastdbWriter)
+			defer func() {
+				<- sem
+			}()
+			wg.Done()
+		}()
+
+	}
+	wg.Wait()
+	close(blastdbWriter)
+}
+
+func internalRefSeqProcessingMethod(db *sql.DB, molecularTypeMap *helper.MolecularMap, res RefSInf, organismMap *helper.OrganismMap, source int64, startingCodons map[string]*models.UpepCodon, endingCodons map[string]*models.UpepCodon, blastdbWriter chan []string) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Panicln(err)
+	}
+	if val, ok := molecularTypeMap.Load(res.MolecularType.Name); ok {
+		res.RefSeq.MolecularTypeID = null.NewInt64(val.ID, true)
+	} else {
+		exists, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).Exists()
 		if err != nil {
 			log.Panicln(err)
 		}
-
-		if val, ok := molecularTypeMap[res.MolecularType.Name]; ok {
-			res.RefSeq.MolecularTypeID = null.NewInt64(val.ID, true)
-		} else {
-			exists, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).Exists()
-			if err != nil {
-				log.Panicln(err)
-			}
-			if !exists {
-				err := res.MolecularType.Insert(db)
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(res.MolecularType)
-				}
-			} else {
-				mt, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).One()
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(res.MolecularType)
-				}
-				res.MolecularType = *mt
-			}
-			res.RefSeq.MolecularTypeID = null.NewInt64(res.MolecularType.ID, true)
-			molecularTypeMap[res.MolecularType.Name] = res.MolecularType
-		}
-		if val, ok := organismMap[res.Organism.Name]; ok {
-			res.RefSeq.OrganismID = null.NewInt64(val.ID, true)
-		} else {
-			exists, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).Exists()
-			if err != nil {
-				log.Panicln(err)
-			}
-			if exists {
-				org, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).One()
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(err)
-				}
-				res.Organism = *org
-			} else {
-				err := res.Organism.Insert(db)
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(res.Organism)
-				}
-			}
-			res.RefSeq.OrganismID = null.NewInt64(res.Organism.ID, true)
-			organismMap[res.Organism.Name] = res.Organism
-		}
-		if res.Accession.Accession != "" {
-			err = res.Accession.Insert(db)
+		if !exists {
+			err := res.MolecularType.Insert(db)
 			if err != nil {
 				tx.Rollback()
-				log.Panicln(res.Accession)
+				log.Panicln(res.MolecularType)
 			}
-			res.RefSeq.AccessionID = null.NewInt64(res.Accession.ID, true)
-		}
-
-		if res.GI.Gi != 0 {
-			err = res.GI.Insert(db)
+		} else {
+			mt, err := models.UpepMolecularTypes(db, qm.Where("name=?", res.MolecularType.Name)).One()
 			if err != nil {
 				tx.Rollback()
-				log.Panicln(res.GI)
+				log.Panicln(res.MolecularType)
 			}
-			res.RefSeq.GiID = null.NewInt64(res.GI.ID, true)
+			res.MolecularType = *mt
 		}
-		res.RefSeq.RefSeqDBID = null.NewInt64(source, true)
-
-		err = res.RefSeq.Insert(db)
+		res.RefSeq.MolecularTypeID = null.NewInt64(res.MolecularType.ID, true)
+		molecularTypeMap.Store(res.MolecularType.Name, &res.MolecularType)
+	}
+	if val, ok := organismMap.Load(res.Organism.Name); ok {
+		res.RefSeq.OrganismID = null.NewInt64(val.ID, true)
+	} else {
+		exists, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).Exists()
+		if err != nil {
+			log.Panicln(err)
+		}
+		if exists {
+			org, err := models.UpepOrganisms(db, qm.Where("name=?", res.Organism.Name), qm.And("upep_ref_seq_db_id=?", source)).One()
+			if err != nil {
+				tx.Rollback()
+				log.Panicln(err)
+			}
+			res.Organism = *org
+		} else {
+			err := res.Organism.Insert(db)
+			if err != nil {
+				tx.Rollback()
+				log.Panicln(res.Organism)
+			}
+		}
+		res.RefSeq.OrganismID = null.NewInt64(res.Organism.ID, true)
+		organismMap.Store(res.Organism.Name, &res.Organism)
+	}
+	if res.Accession.Accession != "" {
+		err = res.Accession.Insert(db)
 		if err != nil {
 			tx.Rollback()
-			log.Panicln(res.RefSeq)
+			log.Panicln(res.Accession)
 		}
-		var CDS *models.UpepFeature
-		for i := range res.Features {
-			res.Features[i].RefSeqEntryID = res.RefSeq.ID
-			if res.Features[i].Name == "CDS" {
-				CDS = &res.Features[i]
-			}
-			res.Features[i].Insert(tx)
-		}
-		tx.Commit()
-		if CDS != nil {
-			if CDS.Name == "CDS" {
-				cUpep := ParseUpep(res.RefSeq, CDS.FeatureEnd, startingCodons, endingCodons, db)
-				tx, err := db.Begin()
-				if err != nil {
-					tx.Rollback()
-					log.Panicln(res.RefSeq)
-				}
-				var sorfArray []*models.UpepSorfPosition
-				for c := range cUpep {
-					sorfLen := c.EndingPosition-c.StartingPosition
-					if (c.StartingPosition != CDS.FeatureStart) && (15<=sorfLen) && (sorfLen <=600){
-						err := c.Insert(tx)
-						if err != nil {
-							tx.Rollback()
-							log.Println(c.RefSeqEntryID)
-							log.Println(c)
-							log.Panicln(err)
-						}
-						sorfArray = append(sorfArray, c)
-					}
-				}
-				tx.Commit()
-				for _, val := range sorfArray {
-					sequence := res.RefSeq.RefSeqSequence[val.StartingPosition-1:val.EndingPosition]
-					temp := fmt.Sprintf(">%v\n%v\n\n", val.ID, sequence)
-					blastdbWriter <- []string{temp, fmt.Sprintf("%v", val.StartingCodonID), fmt.Sprintf("%v", val.EndingCodonID)}
-				}
-			}
-		}
-		count ++
+		res.RefSeq.AccessionID = null.NewInt64(res.Accession.ID, true)
 	}
-	close(blastdbWriter)
+	if res.GI.Gi != 0 {
+		err = res.GI.Insert(db)
+		if err != nil {
+			tx.Rollback()
+			log.Panicln(res.GI)
+		}
+		res.RefSeq.GiID = null.NewInt64(res.GI.ID, true)
+	}
+	res.RefSeq.RefSeqDBID = null.NewInt64(source, true)
+	err = res.RefSeq.Insert(db)
+	if err != nil {
+		tx.Rollback()
+		log.Println(res.RefSeq.Name, len(res.RefSeq.RefSeqSequence))
+		log.Panicln(err)
+	}
+	var CDS *models.UpepFeature
+	for i := range res.Features {
+		res.Features[i].RefSeqEntryID = res.RefSeq.ID
+		if res.Features[i].Name == "CDS" {
+			CDS = &res.Features[i]
+		}
+		res.Features[i].Insert(tx)
+	}
+	tx.Commit()
+	if CDS != nil {
+		if CDS.Name == "CDS" {
+			log.Println(CDS.FeatureEnd, len(res.RefSeq.RefSeqSequence))
+			cUpep := ParseUpep(res.RefSeq, CDS.FeatureEnd, startingCodons, endingCodons, db)
+			tx, err := db.Begin()
+			if err != nil {
+				tx.Rollback()
+				log.Panicln(res.RefSeq)
+			}
+			var sorfArray []*models.UpepSorfPosition
+			for c := range cUpep {
+				sorfLen := c.EndingPosition - c.StartingPosition
+				if (c.StartingPosition != CDS.FeatureStart) && (15 <= sorfLen) && (sorfLen <= 600) {
+					err := c.Insert(tx)
+					if err != nil {
+						tx.Rollback()
+						log.Println(c.RefSeqEntryID)
+						log.Println(c)
+						log.Panicln(err)
+					}
+					sorfArray = append(sorfArray, c)
+				}
+			}
+			tx.Commit()
+			for _, val := range sorfArray {
+				sequence := res.RefSeq.RefSeqSequence[val.StartingPosition-1 : val.EndingPosition]
+				temp := fmt.Sprintf(">%v\n%v\n\n", val.ID, sequence)
+				blastdbWriter <- []string{temp, fmt.Sprintf("%v", val.StartingCodonID), fmt.Sprintf("%v", val.EndingCodonID)}
+			}
+		}
+	}
 }
 
 func RequestRefSeqInformationStatus(w http.ResponseWriter, db *sql.DB, remote bool, tempPath string) {
@@ -578,18 +595,19 @@ func ParseUpep(refseq models.UpepRefSeqEntry, searchEnd int, startingCodons map[
 		for i:= 0; i < 3; i++ {
 			frames[i] = models.UpepSorfPosition{}
 		}
-		for i := 0; i < (searchEnd-3); i+=3 {
+		for i := 0; i+5 <= searchEnd; i+=3 {
 			for k, _ := range frames {
 				start := i+k
 				end := i+k+3
-				if end < searchEnd {
-					if val, ok := startingCodons[refseq.RefSeqSequence[start:end]]; ok {
+				if end <= searchEnd {
+					seq := refseq.RefSeqSequence[start:end]
+					if val, ok := startingCodons[seq]; ok {
 						frames[k] =  models.UpepSorfPosition{
 							StartingPosition: start+1,
 							RefSeqEntryID:    refseq.ID,
 							StartingCodonID:  val.ID,
 						}
-					} else if val, ok := endingCodons[refseq.RefSeqSequence[start:end]]; ok {
+					} else if val, ok := endingCodons[seq]; ok {
 						if frames[k].StartingPosition != 0 {
 							f := frames[k]
 							f.EndingPosition = end

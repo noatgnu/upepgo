@@ -29,7 +29,7 @@ import (
 	"strings"
 	"github.com/rs/xid"
 	"github.com/noatgnu/upepgo/wrapper"
-)
+	)
 
 var driver = flag.String("driver", "postgres", "Name of database driver to be used")
 var dbName = flag.String("db", "", "Name of database")
@@ -42,7 +42,7 @@ var initCodon = flag.Bool("codon", false, "Populate Starting and Ending Codons T
 var db *sql.DB
 var settings = flag.String("settings", "./settings.json", "Setting File")
 var config helper.Settings
-
+var workPool = flag.Int("pool", 24, "Worker Pool")
 func AdminHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		refseqdb.RequestRefSeqInformationStatus(w, db, false, config.Temp)
@@ -139,7 +139,12 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 			fileMap := make(map[string]*helper.BlastDBWriter)
 
 			writerChan := make(chan []string)
+
 			go func() {
+				molecularTypeMap := helper.MolecularMap{}
+				molecularTypeMap.Initialize()
+				organismMap := helper.OrganismMap{}
+				organismMap.Initialize()
 				if totalNumber != 0 {
 					for _, val := range fileList {
 						totalNumber -= 1
@@ -151,7 +156,7 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 								log.Printf("Finished downloading %v", val.Name)
 							}
 							log.Printf("Started processing %v", val.Name)
-							refseqdb.ReadRefSeqDB(filepath.Join(config.Temp, val.Name), rsdb.ID, db, sMap, eMap, writerChan)
+							refseqdb.ReadRefSeqDB(filepath.Join(config.Temp, val.Name), rsdb.ID, db, sMap, eMap, writerChan, *workPool, &molecularTypeMap, &organismMap)
 							log.Printf("Finished processing %v", val.Name)
 							if test {
 								break
@@ -185,7 +190,7 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 
 					bdb := models.UpepBlastDB{
 						Title:           vars["dbname"],
-						Path:            filepath.Join(config.Blastdb, fileName),
+						Path:            fileName,
 						Description:     "",
 						UpepRefSeqDBID:  rsdb.ID,
 						StartingCodonID: start,
@@ -215,7 +220,7 @@ func AdminRefreshRefSeqHandler(w http.ResponseWriter, r *http.Request) {
 			for k, v := range fileMap {
 				v.Writer.Flush()
 				v.File.Close()
-				refseqdb.MakeBlastDB(config.MakeBlastDB, filepath.Join(config.Temp, k), v.BlastDB.Path)
+				refseqdb.MakeBlastDB(config.MakeBlastDB, filepath.Join(config.Temp, k), filepath.Join(config.Blastdb, v.BlastDB.Path) )
 			}
 
 			log.Printf("Finished Creating DB %s version %v", vars["dbname"], version)
@@ -273,14 +278,14 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 		f.Close()
 		result := make([][]wrapper.TBlastXQuery, len(query.BlastDB))
 		for b := range query.BlastDB {
-			blastDB, err := models.FindUpepBlastDB(db, query.BlastDB[b])
+			blastDB, err := models.UpepBlastDBS(db, qm.Where("id=?",query.BlastDB[b]), qm.Load("UpepRefSeqDB")).One()
 			if err != nil {
 				log.Panicln(err)
 			}
 			tblastcmd := wrapper.TBlastXCommandline{
 				Command:     config.TBlastX,
 				In:          inp,
-				DB:          blastDB.Path,
+				DB:          filepath.Join(config.Blastdb, blastDB.Path),
 				Filter:      false,
 				Out:         inp+".xml",
 				Evalue:      evalue,
@@ -289,9 +294,12 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			tblastcmd.Execute()
 			queriesOut := wrapper.ParseHitTBlastXOutputXML(inp+".xml", queryMap, db)
-			for _, qv := range queriesOut {
-				for _, hv := range qv.Hits {
-					for _, hsp := range hv.Hsps {
+			for qvi, qv := range queriesOut {
+				queriesOut[qvi].StartingCodonId = blastDB.StartingCodonID
+				queriesOut[qvi].EndingCodonId = blastDB.EndingCodonID
+				queriesOut[qvi].OriginDB = blastDB.R.UpepRefSeqDB.Name
+				for hvi, hv := range qv.Hits {
+					for hspi, hsp := range hv.Hsps {
 						upep := helper.Sequence{Header: hv.Def, Seq: hv.Seq[hsp.HitStartPosition-1:hsp.HitEndPosition]}
 						query := helper.Sequence{Header: qv.QueryID, Seq: qv.Seq[hsp.QueryStartPosition-1:hsp.QueryEndPosition]}
 						upepFile := fmt.Sprintf("%v_upep", inp)
@@ -308,20 +316,19 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 							log.Panicln(err)
 						}
 						hsp.LaganAlign = wrapper.ParseLaganCMDOutPut(l.Out)
+						queriesOut[qvi].Hits[hvi].Hsps[hspi] = hsp
 					}
 				}
 			}
-			log.Println(queriesOut)
 			result[b] = queriesOut
 		}
+		log.Println("Finished")
 		encoder := json.NewEncoder(w)
 		err = encoder.Encode(result)
 		if err != nil {
 			log.Panicln(err)
 		}
-		log.Println(evalue)
-		log.Println(query.Sequences)
-		log.Println(query.BlastDB)
+		return
 	}
 }
 

@@ -74,17 +74,19 @@ func ParseLaganCMDOutPut(filep string) helper.LaganAlignment {
 	query := ""
 	for {
 		r, err := reader.ReadString('\n')
+
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			log.Panicln(err)
 		}
+
 		if r != "" {
-			if strings.HasPrefix(r[:9], "seq1") {
+			if strings.HasPrefix(r, "seq1") {
 				inSeq = true
 				upep += r[9:]
-			} else if strings.HasPrefix(r[:9], "seq2") {
+			} else if strings.HasPrefix(r, "seq2") {
 				inSeq = false
 				query += r[9:]
 			} else {
