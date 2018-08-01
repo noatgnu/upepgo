@@ -38,7 +38,8 @@ type TBlastXQuery struct {
 	Hits []TBlastXHit
 	StartingCodonId int64
 	EndingCodonId int64
-	OriginDB string
+	OriginDB int64
+	BlastDBID int64
 }
 
 type TBlastXHit struct {

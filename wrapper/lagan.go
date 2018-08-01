@@ -85,13 +85,13 @@ func ParseLaganCMDOutPut(filep string) helper.LaganAlignment {
 		if r != "" {
 			if strings.HasPrefix(r, "seq1") {
 				inSeq = true
-				upep += r[9:]
+				upep += strings.TrimRight(r[9:], "\n")
 			} else if strings.HasPrefix(r, "seq2") {
 				inSeq = false
-				query += r[9:]
+				query += strings.TrimRight(r[9:], "\n")
 			} else {
 				if inSeq {
-					midLine += r[9:]
+					midLine += strings.TrimRight(r[9:], "\n")
 				}
 			}
 		}

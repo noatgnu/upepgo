@@ -278,7 +278,7 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 		f.Close()
 		result := make([][]wrapper.TBlastXQuery, len(query.BlastDB))
 		for b := range query.BlastDB {
-			blastDB, err := models.UpepBlastDBS(db, qm.Where("id=?",query.BlastDB[b]), qm.Load("UpepRefSeqDB")).One()
+			blastDB, err := models.UpepBlastDBS(db, qm.Where("id=?", query.BlastDB[b]), qm.Load("UpepRefSeqDB")).One()
 			if err != nil {
 				log.Panicln(err)
 			}
@@ -297,7 +297,8 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 			for qvi, qv := range queriesOut {
 				queriesOut[qvi].StartingCodonId = blastDB.StartingCodonID
 				queriesOut[qvi].EndingCodonId = blastDB.EndingCodonID
-				queriesOut[qvi].OriginDB = blastDB.R.UpepRefSeqDB.Name
+				queriesOut[qvi].OriginDB = blastDB.R.UpepRefSeqDB.ID
+				queriesOut[qvi].BlastDBID = query.BlastDB[b]
 				for hvi, hv := range qv.Hits {
 					for hspi, hsp := range hv.Hsps {
 						upep := helper.Sequence{Header: hv.Def, Seq: hv.Seq[hsp.HitStartPosition-1:hsp.HitEndPosition]}
@@ -324,7 +325,7 @@ func SearchSORFHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Finished")
 		encoder := json.NewEncoder(w)
-		err = encoder.Encode(result)
+		err = encoder.Encode(result[:])
 		if err != nil {
 			log.Panicln(err)
 		}
